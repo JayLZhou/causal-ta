@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {tutorRequest,parseReply,askTutor} from '../lib/tutor.mjs';
+import {tutorRequest,parseReply,askTutor,reserveQuota} from '../lib/tutor.mjs';
 import {boundedText} from '../lib/body.mjs';
 const input={model:'test-model',message:'Why?',notes:[{id:'n1',title:'Algebra',subject:'Math',body:'x'.repeat(7000)}],history:[],goal:'Understand'};
 const reply={message:'Compare two explanations',hypotheses:['One condition is missing'],experiment:'Change one condition',prediction_question:'What do you predict?',transfer_question:'Try a new example',reference_ids:['n1']};
@@ -10,3 +10,5 @@ test('only allowed note references accepted',()=>{assert.deepEqual(parseReply(pa
 test('refusal, incomplete and malformed responses rejected',()=>{assert.throws(()=>parseReply({status:'incomplete',output:[]},[]));assert.throws(()=>parseReply({status:'completed',output:[{content:[{type:'refusal'}]}]},[]));assert.throws(()=>parseReply(payload({message:'hello'}),[]));});
 test('adapter uses server credential and surfaces failure without key',async()=>{const actual=await askTutor(input,'test-secret',async(url,options)=>{assert.equal(url,'https://api.openai.com/v1/responses');assert.equal(options.headers.Authorization,'Bearer test-secret');return new Response(JSON.stringify(payload(reply)),{status:200});});assert.deepEqual(actual,reply);await assert.rejects(askTutor(input,'test-secret',async()=>new Response('test-secret',{status:401})),e=>!e.message.includes('test-secret'));});
 test('body reader limits encoded bytes, including streamed input',async()=>{assert.equal(await boundedText(new Request('http://localhost',{method:'POST',body:'你好'}),6),'你好');await assert.rejects(boundedText(new Request('http://localhost',{method:'POST',body:'你好'}),5));});
+
+test('a capped user cannot drain the global model budget',async()=>{const charged=[];const db={prepare:()=>({bind:(key)=>({run:async()=>{charged.push(key);return {meta:{changes:key.startsWith('user:')?0:1}};}})})};assert.equal(await reserveQuota(db,'limited-user','2026-10-24'),false);assert.equal(charged.some(k=>k.startsWith('global:')),false);});

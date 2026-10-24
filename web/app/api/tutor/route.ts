@@ -1,7 +1,7 @@
 import {boundedText} from '@/lib/body.mjs';
 import {env} from 'cloudflare:workers';
 import {getChatGPTUser} from '../../chatgpt-auth';
-import {askTutor} from '@/lib/tutor.mjs';
+import {askTutor,reserveQuota} from '@/lib/tutor.mjs';
 export const dynamic='force-dynamic';
 const runtime=()=>env as typeof env & {OPENAI_API_KEY?:string;CAUSALTA_MODEL?:string};
 const json=(v:unknown,status=200)=>Response.json(v,{status,headers:{'Cache-Control':'private, no-store'}});
@@ -28,10 +28,7 @@ export async function POST(req:Request){
   const day=new Date().toISOString().slice(0,10);
   await env.DB!.prepare('DELETE FROM usage WHERE substr(key,-10) < ?').bind(day).run();
   // Atomic counters cap provider attempts, including failures; no automatic paid retry.
-  for(const [key,limit] of [[`global:${day}`,100],[`user:${u.userId}:${day}`,20]] as const){
-   const r=await env.DB!.prepare('INSERT INTO usage(key,count) VALUES(?,1) ON CONFLICT(key) DO UPDATE SET count=count+1 WHERE count<?').bind(key,limit).run();
-   if(!r.meta.changes)return json({error:'今日对话请求已达上限，请明天再试。'},429);
-  }
+  if(!await reserveQuota(env.DB!,u.userId,day))return json({error:'今日对话请求已达上限，请明天再试。'},429);
   // Context is independent of quiz sessions: no hidden worlds, answers or grading tools.
   const {results}=await env.DB!.prepare('SELECT message,reply FROM conversations WHERE owner=? ORDER BY created DESC LIMIT 6').bind(u.userId).all();
   const profile=await env.DB!.prepare('SELECT goal FROM profiles WHERE owner=?').bind(u.userId).first<{goal:string}>();

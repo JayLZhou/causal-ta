@@ -24,3 +24,11 @@ export async function askTutor(input,key,request=fetch) {
  if(!r.ok)throw Error(r.status===429?'模型服务繁忙或额度不足，请稍后再试。':'模型服务暂时不可用，请联系站点维护者检查配置。');
  return parseReply(await r.json(),input.notes.map(n=>n.id));
 }
+// Reserve the user's budget first: a capped user must not consume the shared budget.
+export async function reserveQuota(db,owner,day) {
+ for(const [key,limit] of [[`user:${owner}:${day}`,20],[`global:${day}`,100]]) {
+  const r=await db.prepare('INSERT INTO usage(key,count) VALUES(?,1) ON CONFLICT(key) DO UPDATE SET count=count+1 WHERE count<?').bind(key,limit).run();
+  if(!r.meta.changes)return false;
+ }
+ return true;
+}

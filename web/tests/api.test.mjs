@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const base=process.env.TEST_BASE||'http://127.0.0.1:5174';
 if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base)) throw Error('Integration tests are local-only');
 const a='test-a-'+crypto.randomUUID(),b='test-b-'+crypto.randomUUID();
-const request=async(user,body,origin=base)=>{const headers={'Content-Type':'application/json',Origin:origin};if(user){headers['oai-authenticated-user-id']=user;headers['oai-authenticated-user-email']=user+'@example.test';}const r=await fetch(base+'/api/workspace',{method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined});return {status:r.status,body:await r.json()};};
+const request=async(user,body,origin=base)=>{const headers={'Content-Type':'application/json',Origin:origin};if(user){headers['oai-authenticated-user-id']=user;headers['oai-authenticated-user-email']=user+'@example.test';}const r=await fetch(base+'/api/workspace',{method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined});const raw=await r.text();let value;try{value=JSON.parse(raw);}catch{throw Error(`Expected API JSON; status=${r.status}; body=${raw.slice(0,300)}`);}return {status:r.status,body:value};};
 try {
  assert.equal((await request(null)).status,401);
  const anonymousChat=await fetch(base+'/api/tutor');assert.equal(anonymousChat.status,401);
