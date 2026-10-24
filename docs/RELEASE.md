@@ -8,7 +8,7 @@
 python3 -m venv .venv-build
 .venv-build/bin/python -m pip install build twine 'setuptools>=77.0.3'
 .venv-build/bin/python -m build --no-isolation
-.venv-build/bin/python -m twine check dist/causal_ta-0.5.0a1.tar.gz dist/causal_ta-0.5.0a1-py3-none-any.whl
+.venv-build/bin/python -m twine check dist/causal_ta-0.6.0a1.tar.gz dist/causal_ta-0.6.0a1-py3-none-any.whl
 python3 tools/export_release.py
 ```
 
@@ -27,8 +27,9 @@ Windows 将 `.venv-build/bin/python` 换成 `.venv-build\Scripts\python.exe`。�
 ```bash
 python3 -m causal_ta.validate
 python3 -m unittest discover -s tests -v
-.venv-build/bin/python tools/check_install.py dist/causal_ta-0.5.0a1-py3-none-any.whl
+.venv-build/bin/python tools/check_install.py dist/causal_ta-0.6.0a1-py3-none-any.whl
 python3 tools/demo_study.py
+python3 tools/evaluate_tutor.py --output .data/evaluations/release-0.6.0a1.json
 ```
 
 安装验证在临时虚拟环境中以 `--no-index --no-deps` 安装 wheel，并从源码目录外启动实际命令。验证课程、全部静态资源、完整学习流程、迁移期间禁止帮助、教师保存、研究 CLI、重启恢复和退出统计。测试仅使用临时合成数据，不读取真实学习数据库。
@@ -46,3 +47,5 @@ CI 已配置 Ubuntu / Python 3.11 与 3.13，以及 macOS、Windows / Python 3.1
 - 用原创模拟内容录制演示，注明没有真实教学效应结论；社区沟通需明确授权。
 
 1000 stars 是社区目标，不能由构建成功推导。优先验证教师能独立接入课程、学生能完成 tutorial，以及外部贡献者能复现并修复问题。
+
+0.6 的具体发布说明草稿、产物清单和待录制演示脚本见 [发布候选说明](RELEASE_0.6.md)。

@@ -21,7 +21,7 @@ python3 -m causal_ta
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install --no-index --no-deps ./causal_ta-0.5.0a1-py3-none-any.whl
+.venv/bin/python -m pip install --no-index --no-deps ./causal_ta-0.6.0a1-py3-none-any.whl
 .venv/bin/causal-ta --version
 .venv/bin/causal-ta
 ```
@@ -30,7 +30,7 @@ Windows PowerShell 示例：
 
 ```powershell
 py -3 -m venv .venv
-.venv\Scripts\python.exe -m pip install --no-index --no-deps .\causal_ta-0.5.0a1-py3-none-any.whl
+.venv\Scripts\python.exe -m pip install --no-index --no-deps .\causal_ta-0.6.0a1-py3-none-any.whl
 .venv\Scripts\causal-ta.exe --version
 .venv\Scripts\causal-ta.exe
 ```
