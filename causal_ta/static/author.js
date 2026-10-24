@@ -1,5 +1,6 @@
 const $=id=>document.getElementById(id);
 let draft=null, validated=null, busy=false, rawDirty=false;
+function focusContent(element){element.tabIndex=-1;element.focus({preventScroll:true});element.scrollIntoView({block:'start',behavior:'instant'});}
 async function api(path,body){
   const r=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const value=await r.json(); if(!r.ok) throw new Error(value.error||'请求失败'); return value;
@@ -42,24 +43,28 @@ function applyRaw(){
 }
 async function run(fn){
   if(busy)return;busy=true;$('error').textContent='';
+  const previousFocus=document.activeElement;
   const buttons=[...document.querySelectorAll('button')],before=buttons.map(b=>b.disabled);buttons.forEach(b=>b.disabled=true);
-  try{await fn();}catch(e){$('error').textContent=e.message;}
-  finally{busy=false;buttons.forEach((b,i)=>b.disabled=before[i]);$('save').disabled=!validated;}
+  try{await fn();}catch(e){$('error').textContent=e.message;focusContent($('error'));}
+  finally{busy=false;buttons.forEach((b,i)=>b.disabled=before[i]);$('save').disabled=!validated;
+    if(document.activeElement===document.body&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});}
 }
-$('load').onclick=()=>run(async()=>{draft=await api('/api/authoring/templates/'+encodeURIComponent($('template').value));draft.id=draft.id.slice(0,56)+'-custom';draft.title+=' · 我的课程';invalidate();render();sync();});
+$('load').onclick=()=>run(async()=>{draft=await api('/api/authoring/templates/'+encodeURIComponent($('template').value));draft.id=draft.id.slice(0,56)+'-custom';draft.title+=' · 我的课程';invalidate();render();sync();$('metadata').querySelector('input').focus();});
 $('raw').oninput=()=>{rawDirty=true;invalidate();lockForms(true);$('raw-note').textContent='JSON 有未应用的编辑；校验时将使用这里的内容。';};
-$('apply').onclick=()=>run(async()=>{applyRaw();sync();});
+$('apply').onclick=()=>run(async()=>{applyRaw();sync();focusContent($('raw-note'));});
 $('validate').onclick=()=>run(async()=>{
   if(rawDirty)applyRaw();
   const text=JSON.stringify(draft),result=await api('/api/authoring/validate',{course:draft});
   if(text!==JSON.stringify(draft)||rawDirty)throw new Error('校验期间草稿有变化，请重新校验。');
   validated={version:result.version,text};
   $('validation').textContent=`通过：${result.states} 个可区分状态，${result.actions} 个实验，${result.checks} 道理解检查，${result.transfer} 道迁移题。版本 ${result.version.slice(0,12)}。请人工审核题目、反馈和映射后保存。`;
+  focusContent($('validation'));
 });
 $('save').onclick=()=>run(async()=>{
   if(!validated||rawDirty||validated.text!==JSON.stringify(draft))throw new Error('请先校验当前草稿');
   const result=await api('/api/authoring/save',{course:JSON.parse(validated.text),version:validated.version});
   validated=null;const link=document.createElement('a');link.href='/';link.textContent='前往学习入口试用 ↗';$('saved').textContent=`已保存「${result.course.title}」。`; $('saved').append(link);
+  focusContent($('saved'));
 });
 $('download').onclick=()=>run(async()=>{
   const value=rawDirty?JSON.parse($('raw').value):draft;

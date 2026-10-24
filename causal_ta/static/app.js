@@ -2,6 +2,13 @@ const $ = id => document.getElementById(id);
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let session = null, courses = [], busy = false, studyCode = null, config = {tutor:{remote_available:false}};
 
+function focusContent(element) {
+  if (!element) return;
+  if (!element.matches('button,input,select,textarea,a[href]')) element.tabIndex = -1;
+  element.focus({preventScroll:true});
+  element.scrollIntoView({block:'start', behavior:'instant'});
+}
+
 async function api(path, body) {
   const response = await fetch(path, body === undefined ? {} : {
     method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
@@ -12,10 +19,14 @@ async function api(path, body) {
 }
 async function run(fn) {
   if (busy) return;
+  const previousFocus = document.activeElement;
   busy = true; $('error').textContent = '';
   document.querySelectorAll('button').forEach(b => b.disabled = true);
-  try { await fn(); } catch(error) { $('error').textContent = error.message; }
-  finally { busy = false; document.querySelectorAll('button').forEach(b => b.disabled = false); }
+  try { await fn(); } catch(error) { $('error').textContent = error.message; focusContent($('error')); }
+  finally {
+    busy = false; document.querySelectorAll('button').forEach(b => b.disabled = false);
+    if(document.activeElement === document.body && previousFocus?.isConnected) previousFocus.focus({preventScroll:true});
+  }
 }
 function save(next, preserveForms=false) {
   const previous = preserveForms ? [...document.querySelectorAll('#experiment-form input, #diagnose-form select, input[name="action"]')].map(el=>({id:el.id,name:el.name,value:el.value,checked:el.checked,type:el.type})) : [];
@@ -31,7 +42,7 @@ function renderCatalog() {
   $('catalog').innerHTML = courses.map(c => `<button class="course ${session?.course.id === c.id ? 'selected' : ''}" data-course="${esc(c.id)}"><span class="eyebrow">${esc(c.subject)}</span><h2>${esc(c.title)}</h2><p>${esc(c.description)}</p><strong>开始探索 ↗</strong></button>`).join('');
   document.querySelectorAll('[data-course]').forEach(button => button.addEventListener('click', () => run(async () => {
     save(await api('/api/start', {course:button.dataset.course}));
-    $('workspace').scrollIntoView({behavior:'smooth', block:'start'});
+    focusContent($('lesson-name'));
   })));
 }
 function render() {
@@ -48,7 +59,11 @@ function render() {
   $('program').textContent = c.program;
   $('prediction-note').textContent = c.prediction_tolerance ? `支持小数预测，允许绝对误差 ${c.prediction_tolerance}；条件概率可保留四位小数。` : '';
   $('observation').textContent = `${c.outcome_label}：${s.observation}`;
-  for (const stage of ['investigate','transfer','complete']) $('step-'+stage).classList.toggle('active', s.stage === stage);
+  for (const stage of ['investigate','transfer','complete']) {
+    $('step-'+stage).classList.toggle('active', s.stage === stage);
+    if(s.stage===stage) $('step-'+stage).setAttribute('aria-current','step');
+    else $('step-'+stage).removeAttribute('aria-current');
+  }
   $('semantics').textContent = c.semantics === 'mechanistic_scm' ? '受控系统因果模型' : '数学依赖模型';
   $('graph').textContent = c.graph.join('\n');
   $('model-note').textContent = c.model_note;
@@ -62,13 +77,16 @@ function render() {
   $('learner-panel').hidden = !s.learner.objectives.length;
   $('learner-objectives').innerHTML = s.learner.objectives.map(o=>`<div class="objective"><strong>${esc(o.label)}</strong><small>${esc(o.status)} · ${o.correct}/${o.attempted} 次检查通过</small></div>`).join('');
   $('learner-hypotheses').innerHTML = s.learner.hypotheses.map(h=>`<p><strong>${esc(h.label)}</strong><br><small>${esc(h.status)}</small></p>`).join('');
-  $('check-panel').hidden = !s.concept_check;
+  const lastCheck = [...s.events].reverse().find(e=>e.type==='concept_check');
+  $('check-panel').hidden = s.stage==='transfer' || (!s.concept_check && !lastCheck);
+  $('check-form').hidden = !s.concept_check;
+  $('check-prompt').hidden = $('check-reason').hidden = !s.concept_check;
+  $('check-title').textContent = s.concept_check ? '先区分两种想法' : '理解检查已完成';
   if(s.concept_check) {
     $('check-prompt').textContent = s.concept_check.prompt;
     $('check-reason').textContent = '为什么问这道题：'+s.concept_check.selection.reason;
     $('check-options').innerHTML = s.concept_check.options.map((option,i)=>`<label class="action"><input type="radio" name="check-answer" value="${i}" required>${esc(option)}</label>`).join('');
   }
-  const lastCheck = [...s.events].reverse().find(e=>e.type==='concept_check');
   $('check-feedback').textContent = lastCheck ? `上一次检查${lastCheck.correct?'通过':'需再看一遍'}：${lastCheck.question}\n${lastCheck.feedback}` : '';
   $('tutor-panel').hidden = s.stage==='transfer';
   $('history-panel').hidden = s.stage==='transfer';
@@ -79,7 +97,11 @@ function render() {
   const refs = new Map(c.references.map(r=>[r.id,r]));
   $('tutor-conversation').innerHTML = s.tutor_turns.map(t=>`<div class="dialogue"><p class="student">我：${esc(t.student)}</p><small>${t.mode==='openai'?'联网 TA · 生成内容需核查':'离线 TA · 课程预设追问'}</small>${t.fallback_notice?`<p class="wrong">${esc(t.fallback_notice)}</p>`:''}<p>${esc(t.message)}</p><strong>${esc(t.question)}</strong>${t.reference_ids.length?`<details><summary>查看课程依据</summary>${t.reference_ids.filter(id=>refs.has(id)).map(id=>`<p class="reference">${esc(refs.get(id).label)}：${esc(refs.get(id).text)}</p>`).join('')}</details>`:''}</div>`).join('');
   $('candidates').innerHTML = `<table><thead><tr>${keys.map(k=>`<th>${esc(c.variables[k].label)}</th>`).join('')}</tr></thead><tbody>${s.candidates.map(w=>`<tr>${keys.map(k=>`<td>${esc(w[k])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-  $('experiment-panel').hidden = s.stage !== 'investigate' || !s.actions.length;
+  const lastExperiment = [...s.events].reverse().find(e=>e.type==='experiment');
+  $('experiment-panel').hidden = s.stage !== 'investigate';
+  $('experiment-form').hidden = !s.actions.length;
+  $('experiment-title').textContent = s.actions.length ? '选一次实验' : '实验已全部完成';
+  $('experiment-feedback').textContent = lastExperiment ? `${lastExperiment.title}：预测 ${lastExperiment.prediction}，观察到 ${lastExperiment.result}。${lastExperiment.explanation}` : '';
   $('diagnose-panel').hidden = s.stage !== 'investigate';
   $('actions').innerHTML = s.actions.map((a,i) => `<label class="action"><input type="radio" name="action" value="${esc(a.id)}" ${i===0?'checked':''}><strong>${esc(a.title)}</strong><em>${i===0 && a.information_gain>0?'建议尝试 · ':''}${a.information_gain} bits</em><small>${esc(a.description)}</small></label>`).join('');
   $('prediction').value = '';
@@ -106,6 +128,7 @@ $('experiment-form').addEventListener('submit', event => {
     const action = document.querySelector('input[name="action"]:checked')?.value;
     if(!action || $('prediction').value.trim()==='') throw new Error('请先选择实验并填写预测');
     save(await api('/api/experiment', {id:session.id, action, prediction:Number($('prediction').value)}));
+    focusContent($('experiment-feedback'));
   });
 });
 $('diagnose-form').addEventListener('submit', event => {
@@ -113,19 +136,25 @@ $('diagnose-form').addEventListener('submit', event => {
   run(async () => {
     const values = Object.fromEntries([...new FormData(event.target)].map(([k,v])=>[k,Number(v)]));
     save(await api('/api/diagnose', {id:session.id, values}));
-    if(session.stage==='transfer') $('transfer-panel').scrollIntoView({behavior:'smooth'});
+    focusContent(session.stage==='transfer' ? $('transfer-question') : $('diagnosis-feedback'));
   });
 });
 $('transfer-form').addEventListener('submit', event => {
   event.preventDefault();
   const answer = Number(new FormData(event.target).get('answer'));
-  run(async () => save(await api('/api/transfer', {id:session.id, answer})));
+  run(async () => {
+    save(await api('/api/transfer', {id:session.id, answer}));
+    focusContent(session.stage==='complete' ? $('complete-panel').querySelector('h2') : $('transfer-question'));
+  });
 });
 $('check-form').addEventListener('submit', event => {
   event.preventDefault();
   const answer = new FormData(event.target).get('check-answer');
   if(answer===null) return;
-  run(async () => save(await api('/api/check',{id:session.id,check_id:session.concept_check.id,answer:Number(answer)}),true));
+  run(async () => {
+    save(await api('/api/check',{id:session.id,check_id:session.concept_check.id,answer:Number(answer)}),true);
+    focusContent($('check-feedback'));
+  });
 });
 $('tutor-form').addEventListener('submit', event => {
   event.preventDefault();
@@ -133,9 +162,12 @@ $('tutor-form').addEventListener('submit', event => {
     const message=$('tutor-message').value;
     save(await api('/api/tutor',{id:session.id,message,use_remote:!session.study_assignment && config.tutor.remote_available && $('use-remote').checked}),true);
     $('tutor-message').value='';
+    focusContent($('tutor-conversation').lastElementChild);
   });
 });
-$('restart').addEventListener('click', () => run(async () => save(await api('/api/start',{course:session.course.id}))));
+$('restart').addEventListener('click', () => run(async () => {
+  save(await api('/api/start',{course:session.course.id})); focusContent($('lesson-name'));
+}));
 $('export').addEventListener('click', () => {
   const record = {schema_version:3, course:session.course.id, course_version:session.course.version, semantics:session.course.semantics,
     teaching_policy:session.teaching_policy, study_assignment:session.study_assignment,
@@ -158,22 +190,25 @@ $('study-info-form').addEventListener('submit',event=>{
     $('study-contact').textContent='负责人：'+info.contact;
     $('study-kind').textContent=(info.data_kind==='synthetic'?'这是软件演练，不收集真实学生证据。':'本机教学研究。')+(info.closed?' 已停止新分配，已有会话仍可恢复。':' 两组各有 50% 的分配概率。');
     $('study-consent-text').textContent=info.consent;
+    focusContent($('study-title'));
   });
 });
 $('study-join').addEventListener('click',()=>run(async()=>{
   if(!studyCode||!$('study-consent').checked)throw new Error('请先查看说明并自愿勾选同意');
   save(await api('/api/study/join',{code:studyCode,consent:true}));
   studyCode=null;$('study-code').value='';$('study-consent').checked=false;$('study-info').hidden=true;
-  $('workspace').scrollIntoView({behavior:'smooth'});
+  focusContent($('lesson-name'));
 }));
 $('forget').addEventListener('click',()=>{
   $('forget-panel').hidden=false;
   $('forget-notice').textContent=session.study_assignment?'将删除本机的答题、实验和对话记录并退出研究；保留最小分组与退出计数，用于报告缺失结果。参与码将失效，无法撤销。已下载的导出文件需自行删除。':'将永久删除本机的答题、实验和对话记录，无法撤销。已下载的导出文件需自行删除。';
+  focusContent($('forget-panel').querySelector('h2'));
 });
-$('forget-cancel').addEventListener('click',()=>{$('forget-panel').hidden=true;});
+$('forget-cancel').addEventListener('click',()=>{$('forget-panel').hidden=true;focusContent($('forget'));});
 $('forget-confirm').addEventListener('click',()=>run(async()=>{
   await api('/api/forget',{id:session.id});localStorage.removeItem('causal-ta-session');session=null;
   $('workspace').hidden=true;$('forget-panel').hidden=true;renderCatalog();
+  focusContent($('catalog').querySelector('button'));
 }));
 run(async () => {
   [courses,config] = await Promise.all([api('/api/courses'),api('/api/config')]); renderCatalog();
