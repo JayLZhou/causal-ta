@@ -8,9 +8,36 @@ import re
 import subprocess
 import tempfile
 import threading
+import time
 import venv
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
+
+
+def wait_for_server(process, timeout=60):
+    """等待实际就绪输出；同时排空两条管道，区分提前退出与仍未就绪。"""
+    messages=queue.Queue()
+    def read(stream):
+        for line in stream:
+            messages.put(line.rstrip())
+        messages.put(None)
+    for stream in (process.stdout,process.stderr):
+        threading.Thread(target=read,args=(stream,),daemon=True).start()
+    deadline=time.monotonic()+timeout
+    recent=[];closed=0
+    while time.monotonic()<deadline:
+        try:line=messages.get(timeout=min(.2,max(.001,deadline-time.monotonic())))
+        except queue.Empty:continue
+        if line is None:
+            closed+=1
+            if closed==2:
+                process.wait(timeout=5)
+                raise RuntimeError(f'安装版服务器提前退出（exit={process.returncode}）：'+ '\n'.join(recent))
+            continue
+        recent=(recent+[line])[-10:]
+        match=re.search(r'^CausalTA：http://127\.0\.0\.1:\d+',line)
+        if match:return match.group().split('：',1)[1]
+    raise RuntimeError(f'安装版服务器在 {timeout} 秒内未报告就绪（exit={process.poll()}）：'+ '\n'.join(recent))
 
 
 def main():
@@ -46,13 +73,8 @@ def main():
         data=work/'explicit-data'
         def start():
             process=subprocess.Popen([str(app),'--port','0','--data-dir',str(data),'--authoring','--studies'],cwd=work,env=env,text=True,encoding='utf-8',stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            lines=queue.Queue()
-            threading.Thread(target=lambda:lines.put(process.stdout.readline()),daemon=True).start()
             try:
-                first=lines.get(timeout=15)
-                match=re.search(r'http://127\.0\.0\.1:\d+',first)
-                if not match:raise RuntimeError('安装版服务器启动失败：'+first)
-                return process,match.group()
+                return process,wait_for_server(process)
             except BaseException:
                 stop(process);raise
         def stop(process):

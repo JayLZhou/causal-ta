@@ -71,4 +71,4 @@ py -3 -m venv .venv
 - **旧数据似乎消失**：查看启动时打印的数据目录，将 `--data-dir` 指向旧目录。源码模式与安装模式的默认位置不同。
 - **权限错误**：为 `--data-dir` 选择当前用户可写目录；不需要管理员权限来保存学习记录。
 
-当前本机验证环境为 macOS 与 Python 3.13.5；Linux、Windows 和 Python 3.11 已配置于 CI，未在远端执行前不声称通过。
+本机验证环境为 macOS 与 Python 3.13.5。Linux / Python 3.11、3.13，macOS / Python 3.13，Windows / Python 3.13 的实际结果见 [GitHub Actions](https://github.com/JayLZhou/causal-ta/actions/workflows/tests.yml)，应查看所用提交的结果。
