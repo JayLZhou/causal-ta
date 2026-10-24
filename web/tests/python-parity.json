@@ -1,0 +1,844 @@
+[
+  {
+    "course": "binary-search-progress",
+    "world": {
+      "closed": 0,
+      "advance": 0
+    },
+    "observation": -2,
+    "results": {
+      "single-element": -1,
+      "beyond-last": -2,
+      "fix-advance": -1,
+      "fix-final": -2
+    }
+  },
+  {
+    "course": "binary-search-progress",
+    "world": {
+      "closed": 0,
+      "advance": 1
+    },
+    "observation": -1,
+    "results": {
+      "single-element": -1,
+      "beyond-last": -1,
+      "fix-advance": -1,
+      "fix-final": -1
+    }
+  },
+  {
+    "course": "binary-search-progress",
+    "world": {
+      "closed": 1,
+      "advance": 0
+    },
+    "observation": -2,
+    "results": {
+      "single-element": 0,
+      "beyond-last": -2,
+      "fix-advance": -1,
+      "fix-final": -2
+    }
+  },
+  {
+    "course": "binary-search-progress",
+    "world": {
+      "closed": 1,
+      "advance": 1
+    },
+    "observation": -1,
+    "results": {
+      "single-element": 0,
+      "beyond-last": -1,
+      "fix-advance": -1,
+      "fix-final": -1
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 1,
+      "a_only": 1,
+      "b_only": 1
+    },
+    "observation": 0.2,
+    "results": {
+      "count-population": 5,
+      "condition-b": 0.5,
+      "condition-a": 0.5,
+      "count-a": 2,
+      "change-intersection": 0.6666666666666666
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 1,
+      "a_only": 1,
+      "b_only": 3
+    },
+    "observation": 0.14285714285714285,
+    "results": {
+      "count-population": 7,
+      "condition-b": 0.25,
+      "condition-a": 0.5,
+      "count-a": 2,
+      "change-intersection": 0.4
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 1,
+      "a_only": 3,
+      "b_only": 1
+    },
+    "observation": 0.14285714285714285,
+    "results": {
+      "count-population": 7,
+      "condition-b": 0.5,
+      "condition-a": 0.25,
+      "count-a": 4,
+      "change-intersection": 0.6666666666666666
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 1,
+      "a_only": 3,
+      "b_only": 3
+    },
+    "observation": 0.1111111111111111,
+    "results": {
+      "count-population": 9,
+      "condition-b": 0.25,
+      "condition-a": 0.25,
+      "count-a": 4,
+      "change-intersection": 0.4
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 2,
+      "a_only": 1,
+      "b_only": 1
+    },
+    "observation": 0.3333333333333333,
+    "results": {
+      "count-population": 6,
+      "condition-b": 0.6666666666666666,
+      "condition-a": 0.6666666666666666,
+      "count-a": 3,
+      "change-intersection": 0.6666666666666666
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 2,
+      "a_only": 1,
+      "b_only": 3
+    },
+    "observation": 0.25,
+    "results": {
+      "count-population": 8,
+      "condition-b": 0.4,
+      "condition-a": 0.6666666666666666,
+      "count-a": 3,
+      "change-intersection": 0.4
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 2,
+      "a_only": 3,
+      "b_only": 1
+    },
+    "observation": 0.25,
+    "results": {
+      "count-population": 8,
+      "condition-b": 0.6666666666666666,
+      "condition-a": 0.4,
+      "count-a": 5,
+      "change-intersection": 0.6666666666666666
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 2,
+      "a_only": 3,
+      "b_only": 3
+    },
+    "observation": 0.2,
+    "results": {
+      "count-population": 10,
+      "condition-b": 0.4,
+      "condition-a": 0.4,
+      "count-a": 5,
+      "change-intersection": 0.4
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 3,
+      "a_only": 1,
+      "b_only": 1
+    },
+    "observation": 0.42857142857142855,
+    "results": {
+      "count-population": 7,
+      "condition-b": 0.75,
+      "condition-a": 0.75,
+      "count-a": 4,
+      "change-intersection": 0.6666666666666666
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 3,
+      "a_only": 1,
+      "b_only": 3
+    },
+    "observation": 0.3333333333333333,
+    "results": {
+      "count-population": 9,
+      "condition-b": 0.5,
+      "condition-a": 0.75,
+      "count-a": 4,
+      "change-intersection": 0.4
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 3,
+      "a_only": 3,
+      "b_only": 1
+    },
+    "observation": 0.3333333333333333,
+    "results": {
+      "count-population": 9,
+      "condition-b": 0.75,
+      "condition-a": 0.5,
+      "count-a": 6,
+      "change-intersection": 0.6666666666666666
+    }
+  },
+  {
+    "course": "conditional-probability",
+    "world": {
+      "both": 3,
+      "a_only": 3,
+      "b_only": 3
+    },
+    "observation": 0.2727272727272727,
+    "results": {
+      "count-population": 11,
+      "condition-b": 0.5,
+      "condition-a": 0.5,
+      "count-a": 6,
+      "change-intersection": 0.4
+    }
+  },
+  {
+    "course": "container-network",
+    "world": {
+      "running": 0,
+      "binding": 0,
+      "mapping": 0
+    },
+    "observation": 0,
+    "results": {
+      "probe-local": 0,
+      "probe-bind": 0,
+      "probe-map": 0,
+      "do-start": 0,
+      "do-bind": 0,
+      "do-map": 0
+    }
+  },
+  {
+    "course": "container-network",
+    "world": {
+      "running": 0,
+      "binding": 0,
+      "mapping": 1
+    },
+    "observation": 0,
+    "results": {
+      "probe-local": 0,
+      "probe-bind": 0,
+      "probe-map": 1,
+      "do-start": 0,
+      "do-bind": 0,
+      "do-map": 0
+    }
+  },
+  {
+    "course": "container-network",
+    "world": {
+      "running": 0,
+      "binding": 1,
+      "mapping": 0
+    },
+    "observation": 0,
+    "results": {
+      "probe-local": 0,
+      "probe-bind": 1,
+      "probe-map": 0,
+      "do-start": 0,
+      "do-bind": 0,
+      "do-map": 0
+    }
+  },
+  {
+    "course": "container-network",
+    "world": {
+      "running": 0,
+      "binding": 1,
+      "mapping": 1
+    },
+    "observation": 0,
+    "results": {
+      "probe-local": 0,
+      "probe-bind": 1,
+      "probe-map": 1,
+      "do-start": 1,
+      "do-bind": 0,
+      "do-map": 0
+    }
+  },
+  {
+    "course": "container-network",
+    "world": {
+      "running": 1,
+      "binding": 0,
+      "mapping": 0
+    },
+    "observation": 0,
+    "results": {
+      "probe-local": 1,
+      "probe-bind": 0,
+      "probe-map": 0,
+      "do-start": 0,
+      "do-bind": 0,
+      "do-map": 0
+    }
+  },
+  {
+    "course": "container-network",
+    "world": {
+      "running": 1,
+      "binding": 0,
+      "mapping": 1
+    },
+    "observation": 0,
+    "results": {
+      "probe-local": 1,
+      "probe-bind": 0,
+      "probe-map": 1,
+      "do-start": 0,
+      "do-bind": 1,
+      "do-map": 0
+    }
+  },
+  {
+    "course": "container-network",
+    "world": {
+      "running": 1,
+      "binding": 1,
+      "mapping": 0
+    },
+    "observation": 0,
+    "results": {
+      "probe-local": 1,
+      "probe-bind": 1,
+      "probe-map": 0,
+      "do-start": 0,
+      "do-bind": 0,
+      "do-map": 1
+    }
+  },
+  {
+    "course": "container-network",
+    "world": {
+      "running": 1,
+      "binding": 1,
+      "mapping": 1
+    },
+    "observation": 1,
+    "results": {
+      "probe-local": 1,
+      "probe-bind": 1,
+      "probe-map": 1,
+      "do-start": 1,
+      "do-bind": 1,
+      "do-map": 1
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 1,
+      "b": -1,
+      "c": -2
+    },
+    "observation": -2,
+    "results": {
+      "value-zero": -2,
+      "derivative-zero": -1,
+      "secant-one": 2.0,
+      "secant-half": 1.5,
+      "shift-constant": 1
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 1,
+      "b": -1,
+      "c": 2
+    },
+    "observation": 2,
+    "results": {
+      "value-zero": 2,
+      "derivative-zero": -1,
+      "secant-one": 2.0,
+      "secant-half": 1.5,
+      "shift-constant": 1
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 1,
+      "b": 0,
+      "c": -2
+    },
+    "observation": -1,
+    "results": {
+      "value-zero": -2,
+      "derivative-zero": 0,
+      "secant-one": 3.0,
+      "secant-half": 2.5,
+      "shift-constant": 2
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 1,
+      "b": 0,
+      "c": 2
+    },
+    "observation": 3,
+    "results": {
+      "value-zero": 2,
+      "derivative-zero": 0,
+      "secant-one": 3.0,
+      "secant-half": 2.5,
+      "shift-constant": 2
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 1,
+      "b": 1,
+      "c": -2
+    },
+    "observation": 0,
+    "results": {
+      "value-zero": -2,
+      "derivative-zero": 1,
+      "secant-one": 4.0,
+      "secant-half": 3.5,
+      "shift-constant": 3
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 1,
+      "b": 1,
+      "c": 2
+    },
+    "observation": 4,
+    "results": {
+      "value-zero": 2,
+      "derivative-zero": 1,
+      "secant-one": 4.0,
+      "secant-half": 3.5,
+      "shift-constant": 3
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 2,
+      "b": -1,
+      "c": -2
+    },
+    "observation": -1,
+    "results": {
+      "value-zero": -2,
+      "derivative-zero": -1,
+      "secant-one": 5.0,
+      "secant-half": 4.0,
+      "shift-constant": 3
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 2,
+      "b": -1,
+      "c": 2
+    },
+    "observation": 3,
+    "results": {
+      "value-zero": 2,
+      "derivative-zero": -1,
+      "secant-one": 5.0,
+      "secant-half": 4.0,
+      "shift-constant": 3
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 2,
+      "b": 0,
+      "c": -2
+    },
+    "observation": 0,
+    "results": {
+      "value-zero": -2,
+      "derivative-zero": 0,
+      "secant-one": 6.0,
+      "secant-half": 5.0,
+      "shift-constant": 4
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 2,
+      "b": 0,
+      "c": 2
+    },
+    "observation": 4,
+    "results": {
+      "value-zero": 2,
+      "derivative-zero": 0,
+      "secant-one": 6.0,
+      "secant-half": 5.0,
+      "shift-constant": 4
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 2,
+      "b": 1,
+      "c": -2
+    },
+    "observation": 1,
+    "results": {
+      "value-zero": -2,
+      "derivative-zero": 1,
+      "secant-one": 7.0,
+      "secant-half": 6.0,
+      "shift-constant": 5
+    }
+  },
+  {
+    "course": "derivative-change",
+    "world": {
+      "a": 2,
+      "b": 1,
+      "c": 2
+    },
+    "observation": 5,
+    "results": {
+      "value-zero": 2,
+      "derivative-zero": 1,
+      "secant-one": 7.0,
+      "secant-half": 6.0,
+      "shift-constant": 5
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": -2,
+      "b": -2
+    },
+    "observation": -4,
+    "results": {
+      "observe-zero": -2,
+      "observe-two": -6,
+      "replace-slope": -2,
+      "replace-offset": -2
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": -2,
+      "b": 0
+    },
+    "observation": -2,
+    "results": {
+      "observe-zero": 0,
+      "observe-two": -4,
+      "replace-slope": 0,
+      "replace-offset": -2
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": -2,
+      "b": 2
+    },
+    "observation": 0,
+    "results": {
+      "observe-zero": 2,
+      "observe-two": -2,
+      "replace-slope": 2,
+      "replace-offset": -2
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": -1,
+      "b": -2
+    },
+    "observation": -3,
+    "results": {
+      "observe-zero": -2,
+      "observe-two": -4,
+      "replace-slope": -2,
+      "replace-offset": -1
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": -1,
+      "b": 0
+    },
+    "observation": -1,
+    "results": {
+      "observe-zero": 0,
+      "observe-two": -2,
+      "replace-slope": 0,
+      "replace-offset": -1
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": -1,
+      "b": 2
+    },
+    "observation": 1,
+    "results": {
+      "observe-zero": 2,
+      "observe-two": 0,
+      "replace-slope": 2,
+      "replace-offset": -1
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": 0,
+      "b": -2
+    },
+    "observation": -2,
+    "results": {
+      "observe-zero": -2,
+      "observe-two": -2,
+      "replace-slope": -2,
+      "replace-offset": 0
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": 0,
+      "b": 0
+    },
+    "observation": 0,
+    "results": {
+      "observe-zero": 0,
+      "observe-two": 0,
+      "replace-slope": 0,
+      "replace-offset": 0
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": 0,
+      "b": 2
+    },
+    "observation": 2,
+    "results": {
+      "observe-zero": 2,
+      "observe-two": 2,
+      "replace-slope": 2,
+      "replace-offset": 0
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": 1,
+      "b": -2
+    },
+    "observation": -1,
+    "results": {
+      "observe-zero": -2,
+      "observe-two": 0,
+      "replace-slope": -2,
+      "replace-offset": 1
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": 1,
+      "b": 0
+    },
+    "observation": 1,
+    "results": {
+      "observe-zero": 0,
+      "observe-two": 2,
+      "replace-slope": 0,
+      "replace-offset": 1
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": 1,
+      "b": 2
+    },
+    "observation": 3,
+    "results": {
+      "observe-zero": 2,
+      "observe-two": 4,
+      "replace-slope": 2,
+      "replace-offset": 1
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": 2,
+      "b": -2
+    },
+    "observation": 0,
+    "results": {
+      "observe-zero": -2,
+      "observe-two": 2,
+      "replace-slope": -2,
+      "replace-offset": 2
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": 2,
+      "b": 0
+    },
+    "observation": 2,
+    "results": {
+      "observe-zero": 0,
+      "observe-two": 4,
+      "replace-slope": 0,
+      "replace-offset": 2
+    }
+  },
+  {
+    "course": "linear-functions",
+    "world": {
+      "m": 2,
+      "b": 2
+    },
+    "observation": 4,
+    "results": {
+      "observe-zero": 2,
+      "observe-two": 6,
+      "replace-slope": 2,
+      "replace-offset": 2
+    }
+  },
+  {
+    "course": "python-loop-boundaries",
+    "world": {
+      "start": 0,
+      "inclusive": 0
+    },
+    "observation": 3,
+    "results": {
+      "count-three": 3,
+      "sum-one": 0,
+      "include-end": 6,
+      "start-at-one": 2
+    }
+  },
+  {
+    "course": "python-loop-boundaries",
+    "world": {
+      "start": 0,
+      "inclusive": 1
+    },
+    "observation": 6,
+    "results": {
+      "count-three": 4,
+      "sum-one": 1,
+      "include-end": 6,
+      "start-at-one": 3
+    }
+  },
+  {
+    "course": "python-loop-boundaries",
+    "world": {
+      "start": 1,
+      "inclusive": 0
+    },
+    "observation": 3,
+    "results": {
+      "count-three": 2,
+      "sum-one": 0,
+      "include-end": 6,
+      "start-at-one": 2
+    }
+  },
+  {
+    "course": "python-loop-boundaries",
+    "world": {
+      "start": 1,
+      "inclusive": 1
+    },
+    "observation": 6,
+    "results": {
+      "count-three": 3,
+      "sum-one": 1,
+      "include-end": 6,
+      "start-at-one": 3
+    }
+  }
+]

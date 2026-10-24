@@ -1,0 +1,286 @@
+{
+  "id": "container-network",
+  "title": "宿主机为什么连不上容器里的 API？",
+  "subject": "计算机 · 网络与系统",
+  "description": "一个 API 容器无法从宿主机访问。通过观测与单变量干预，区分服务、监听地址和端口映射的影响。可能同时存在多个故障。",
+  "semantics": "mechanistic_scm",
+  "model_note": "受控模拟：reachable = running × binding × mapping。假设路由、防火墙、端口号和客户端均正确。真实环境不满足这些假设时，必须扩展候选原因。",
+  "source": {
+    "label": "教学场景参考：Yan Lin 的 AI Systems 课程；题目与模型独立编写",
+    "url": "https://blog.yanlincs.com/ai-system/"
+  },
+  "variables": {
+    "running": {
+      "label": "服务已启动",
+      "domain": [
+        0,
+        1
+      ]
+    },
+    "binding": {
+      "label": "监听容器所有接口",
+      "domain": [
+        0,
+        1
+      ]
+    },
+    "mapping": {
+      "label": "宿主机端口映射正确",
+      "domain": [
+        0,
+        1
+      ]
+    }
+  },
+  "context": {},
+  "graph": [
+    "服务运行 ─┐",
+    "接口监听 ─┼─→ 宿主机可访问",
+    "端口映射 ─┘"
+  ],
+  "observation": [
+    "all",
+    "running",
+    "binding",
+    "mapping"
+  ],
+  "start_filter": [
+    "add",
+    1,
+    [
+      "mul",
+      -1,
+      [
+        "all",
+        "running",
+        "binding",
+        "mapping"
+      ]
+    ]
+  ],
+  "outcome_label": "宿主机可访问（1=是，0=否）",
+  "actions": [
+    {
+      "id": "probe-local",
+      "title": "从容器内请求 loopback",
+      "description": "保持配置不变，从容器内请求服务。预测：1 成功 / 0 失败。",
+      "kind": "observe",
+      "measure": "running",
+      "explanation": "在此模型中，容器内 loopback 请求只依赖服务运行；失败不能靠修复宿主机映射解决。"
+    },
+    {
+      "id": "probe-bind",
+      "title": "查看监听接口",
+      "description": "只观察服务的监听配置。预测：1 为所有接口 / 0 为 loopback。",
+      "kind": "observe",
+      "measure": "binding",
+      "explanation": "这个观测检查监听配置，不改动系统，也不能单独证明外部访问已经恢复。"
+    },
+    {
+      "id": "probe-map",
+      "title": "查看端口映射",
+      "description": "只观察容器的端口映射。预测：1 正确 / 0 缺失或不匹配。",
+      "kind": "observe",
+      "measure": "mapping",
+      "explanation": "EXPOSE 不会自动发布宿主机端口。映射是这个模型中的独立条件。"
+    },
+    {
+      "id": "do-start",
+      "title": "只启动服务，再测外部访问",
+      "description": "临时设置 running=1，其他条件不变。预测：1 可访问 / 0 不可访问。",
+      "kind": "do",
+      "do": {
+        "running": 1
+      },
+      "measure": [
+        "all",
+        "running",
+        "binding",
+        "mapping"
+      ],
+      "explanation": "如果仍无法访问，说明至少还有一个其他条件不成立；不能由此断言启动服务无用。每次实验结束都会恢复初始环境。"
+    },
+    {
+      "id": "do-bind",
+      "title": "只更改监听接口，再测外部访问",
+      "description": "临时设置 binding=1，其他条件不变。预测：1 可访问 / 0 不可访问。",
+      "kind": "do",
+      "do": {
+        "binding": 1
+      },
+      "measure": [
+        "all",
+        "running",
+        "binding",
+        "mapping"
+      ],
+      "explanation": "只替换监听条件就是本模拟中的 do(binding=1)。多故障情况下，单次修复不一定恢复访问。"
+    },
+    {
+      "id": "do-map",
+      "title": "只修复端口映射，再测外部访问",
+      "description": "临时设置 mapping=1，其他条件不变。预测：1 可访问 / 0 不可访问。",
+      "kind": "do",
+      "do": {
+        "mapping": 1
+      },
+      "measure": [
+        "all",
+        "running",
+        "binding",
+        "mapping"
+      ],
+      "explanation": "保持其余条件不变，才能把本次结果变化归因于映射干预；结论仅在声明的模拟模型内成立。"
+    }
+  ],
+  "transfer": [
+    {
+      "prompt": "新环境中，服务正在运行、端口映射正确，但只监听容器的 127.0.0.1。要让宿主机访问，需要改变什么？",
+      "options": [
+        "只增加 EXPOSE 声明",
+        "让服务监听容器可达的接口，例如 0.0.0.0",
+        "重复安装客户端依赖"
+      ],
+      "answer": 1,
+      "explanation": "loopback 仅接受容器自身访问；端口映射不能替代接口监听。"
+    },
+    {
+      "prompt": "另一个环境同时存在服务未启动和映射缺失。只修复映射后访问仍失败，可以得出什么？",
+      "options": [
+        "端口映射对访问没有影响",
+        "服务一定已经运行",
+        "仍可能存在其他故障，不能排除映射也是原来的原因"
+      ],
+      "answer": 2,
+      "explanation": "多个必要条件同时失效时，单个干预可能不改变最终结果。这是多故障诊断中的遮蔽现象。"
+    }
+  ],
+  "pedagogy": {
+    "objectives": [
+      {
+        "id": "ports",
+        "label": "区分镜像声明、监听和端口发布"
+      },
+      {
+        "id": "multi-fault",
+        "label": "理解多个必要条件同时失效"
+      }
+    ],
+    "references": [
+      {
+        "id": "network-gates",
+        "label": "课程模型：外部可达的三个条件",
+        "text": "本课程模拟设 Y=R×B×P。R 为服务运行，B 为监听可达接口，P 为正确发布端口。只有三个条件都满足时，宿主机可达。"
+      },
+      {
+        "id": "port-publication",
+        "label": "课程依据：声明与端口发布不同",
+        "text": "EXPOSE 是镜像的端口元数据；运行时端口发布和服务监听配置是不同机制。实际网络还受防火墙与路由影响。"
+      },
+      {
+        "id": "controlled-intervention",
+        "label": "课程依据：受控干预",
+        "text": "一次实验只替换指定变量并固定其他条件。实验后恢复原状态。多个必要条件同时失效时，单项修复可能无法改变最终输出。"
+      }
+    ],
+    "misconceptions": [
+      {
+        "id": "expose-publishes",
+        "objective": "ports",
+        "label": "可能把 EXPOSE 当作宿主机端口发布",
+        "hint": "区分“镜像描述了什么端口”和“这一次运行把哪个端口连接到宿主机”。它们发生在不同阶段。",
+        "question": "如果同一镜像同时运行两份，每份的宿主机端口由谁决定？"
+      },
+      {
+        "id": "single-cause",
+        "objective": "multi-fault",
+        "label": "可能把单次修复无效果误当作该因素无作用",
+        "hint": "想象两道串联的门都关着。只打开一道门，整体仍然不通。一次实验只检查一个变化。",
+        "question": "修好端口后仍失败，有没有可能服务本身也没有启动？"
+      }
+    ],
+    "checks": [
+      {
+        "id": "expose-initial",
+        "target": "expose-publishes",
+        "objective": "ports",
+        "prompt": "Dockerfile 写了 EXPOSE 9000，就能保证宿主机访问该端口吗？",
+        "options": [
+          "能，EXPOSE 已自动发布端口",
+          "不能，还要检查运行时发布、服务监听等条件",
+          "能，只要镜像构建成功"
+        ],
+        "answer": 1,
+        "wrong_map": {
+          "0": "expose-publishes",
+          "2": "expose-publishes"
+        },
+        "feedback": "EXPOSE 描述端口元数据，不自动完成宿主机端口发布。",
+        "references": [
+          "port-publication"
+        ]
+      },
+      {
+        "id": "fault-initial",
+        "target": "single-cause",
+        "objective": "multi-fault",
+        "prompt": "R=0、B=1、P=0，只把 P 改成 1 后 Y 仍为 0。可以说 P 对 Y 没有作用吗？",
+        "options": [
+          "可以，修复后没变化就是没有作用",
+          "不可以，R 仍然为 0，可能遮蔽 P 的作用",
+          "可以，所以不用检查 P"
+        ],
+        "answer": 1,
+        "wrong_map": {
+          "0": "single-cause",
+          "2": "single-cause"
+        },
+        "feedback": "模型 Y=R×B×P 中 R=0 时 Y 恒为 0。固定 R=1、B=1 再比较 P 才能看到其作用。",
+        "references": [
+          "network-gates",
+          "controlled-intervention"
+        ]
+      },
+      {
+        "id": "expose-followup",
+        "target": "expose-publishes",
+        "objective": "ports",
+        "prompt": "同一镜像运行两份，分别需要宿主机 9001 和 9002 端口访问。应该在哪个阶段区分端口发布？",
+        "options": [
+          "分别在运行时指定映射",
+          "只把 Dockerfile 的 EXPOSE 写两次",
+          "修改客户端 Python 版本"
+        ],
+        "answer": 0,
+        "wrong_map": {
+          "1": "expose-publishes"
+        },
+        "feedback": "同一镜像可用于不同实例；宿主机端口映射由运行时配置决定。",
+        "references": [
+          "port-publication"
+        ]
+      },
+      {
+        "id": "fault-followup",
+        "target": "single-cause",
+        "objective": "multi-fault",
+        "prompt": "模型中 R=1、B=0、P=0。为了恢复 Y=1，需要怎样改变？",
+        "options": [
+          "只改变 B",
+          "只改变 P",
+          "同时让 B 和 P 为 1"
+        ],
+        "answer": 2,
+        "wrong_map": {
+          "0": "single-cause",
+          "1": "single-cause"
+        },
+        "feedback": "B 与 P 都是必要条件，因此两者都需要恢复。",
+        "references": [
+          "network-gates",
+          "controlled-intervention"
+        ]
+      }
+    ]
+  }
+}

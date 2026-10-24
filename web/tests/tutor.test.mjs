@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {tutorRequest,parseReply,askTutor} from '../lib/tutor.mjs';
+import {boundedText} from '../lib/body.mjs';
+const input={model:'test-model',message:'Why?',notes:[{id:'n1',title:'Algebra',subject:'Math',body:'x'.repeat(7000)}],history:[],goal:'Understand'};
+const reply={message:'Compare two explanations',hypotheses:['One condition is missing'],experiment:'Change one condition',prediction_question:'What do you predict?',transfer_question:'Try a new example',reference_ids:['n1']};
+const payload=r=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(r)}]}]});
+test('context is bounded and structured; no tools or persistence requested',()=>{const r=tutorRequest(input);assert.equal(r.store,false);assert.equal(r.max_output_tokens,1800);assert.equal(r.tools,undefined);assert.equal(r.text.format.strict,true);const c=JSON.parse(r.input[0].content);assert.equal(c.selected_materials[0].text.length,6000);assert.equal(c.learner_message,'Why?');});
+test('only allowed note references accepted',()=>{assert.deepEqual(parseReply(payload(reply),['n1']),reply);assert.throws(()=>parseReply(payload({...reply,reference_ids:['someone-elses-note']}),['n1']));});
+test('refusal, incomplete and malformed responses rejected',()=>{assert.throws(()=>parseReply({status:'incomplete',output:[]},[]));assert.throws(()=>parseReply({status:'completed',output:[{content:[{type:'refusal'}]}]},[]));assert.throws(()=>parseReply(payload({message:'hello'}),[]));});
+test('adapter uses server credential and surfaces failure without key',async()=>{const actual=await askTutor(input,'test-secret',async(url,options)=>{assert.equal(url,'https://api.openai.com/v1/responses');assert.equal(options.headers.Authorization,'Bearer test-secret');return new Response(JSON.stringify(payload(reply)),{status:200});});assert.deepEqual(actual,reply);await assert.rejects(askTutor(input,'test-secret',async()=>new Response('test-secret',{status:401})),e=>!e.message.includes('test-secret'));});
+test('body reader limits encoded bytes, including streamed input',async()=>{assert.equal(await boundedText(new Request('http://localhost',{method:'POST',body:'你好'}),6),'你好');await assert.rejects(boundedText(new Request('http://localhost',{method:'POST',body:'你好'}),5));});

@@ -1,0 +1,280 @@
+{
+  "id": "conditional-probability",
+  "title": "改变条件后，分母为什么变了？",
+  "subject": "数学 · 概率与统计",
+  "description": "从一个有限样本表计算联合概率与条件概率，区分 P(A|B)、P(B|A) 和 P(A∩B)。",
+  "semantics": "mathematical_dependency",
+  "model_note": "有限等权样本表：both 是同时满足 A 与 B 的数目，a_only/b_only 是仅满足一种条件的数目，neither=2。P(A|B)=both/(both+b_only)。条件化是更换样本范围，不是 do 干预。数值预测允许绝对误差 0.00005，建议保留四位小数。",
+  "variables": {
+    "both": {
+      "label": "同时满足 A 与 B",
+      "domain": [
+        1,
+        2,
+        3
+      ]
+    },
+    "a_only": {
+      "label": "仅满足 A",
+      "domain": [
+        1,
+        3
+      ]
+    },
+    "b_only": {
+      "label": "仅满足 B",
+      "domain": [
+        1,
+        3
+      ]
+    }
+  },
+  "context": {
+    "neither": 2
+  },
+  "graph": [
+    "联合概率：交集数 / 全部样本数",
+    "P(A|B)：交集数 / 满足 B 的样本数",
+    "P(B|A)：交集数 / 满足 A 的样本数"
+  ],
+  "observation": [
+    "div",
+    "both",
+    [
+      "add",
+      "both",
+      "a_only",
+      "b_only",
+      "neither"
+    ]
+  ],
+  "outcome_label": "已知联合概率 P(A∩B)",
+  "source": {
+    "label": "本项目原创例题与可复现检查器",
+    "url": ""
+  },
+  "prediction_tolerance": 5e-05,
+  "actions": [
+    {
+      "id": "count-population",
+      "title": "数出全部样本",
+      "description": "预测四类样本数之和。",
+      "measure": [
+        "add",
+        "both",
+        "a_only",
+        "b_only",
+        "neither"
+      ],
+      "explanation": "计数恢复联合概率所使用的总体分母。",
+      "kind": "observe"
+    },
+    {
+      "id": "condition-b",
+      "title": "只在满足 B 的样本中计算",
+      "description": "预测 P(A|B)，保留四位小数。",
+      "measure": [
+        "div",
+        "both",
+        [
+          "add",
+          "both",
+          "b_only"
+        ]
+      ],
+      "explanation": "条件 B 排除了 a_only 和 neither，新的分母是 both+b_only。",
+      "kind": "observe"
+    },
+    {
+      "id": "condition-a",
+      "title": "只在满足 A 的样本中计算",
+      "description": "预测 P(B|A)，保留四位小数。",
+      "measure": [
+        "div",
+        "both",
+        [
+          "add",
+          "both",
+          "a_only"
+        ]
+      ],
+      "explanation": "交换条件会换分母；两种条件概率一般不同。",
+      "kind": "observe"
+    },
+    {
+      "id": "count-a",
+      "title": "数出满足 A 的样本",
+      "description": "预测 both+a_only。",
+      "measure": [
+        "add",
+        "both",
+        "a_only"
+      ],
+      "explanation": "边缘计数包含只满足 A 的样本，也包含交集。",
+      "kind": "observe"
+    },
+    {
+      "id": "change-intersection",
+      "title": "替换表中交集计数",
+      "description": "临时把 both 设为 2，预测新的 P(A|B)，保留四位小数。",
+      "measure": [
+        "div",
+        "both",
+        [
+          "add",
+          "both",
+          "b_only"
+        ]
+      ],
+      "explanation": "替换计数构造了新的数学样本表；它不等于在真实人群中执行因果干预。",
+      "kind": "transform",
+      "do": {
+        "both": 2
+      }
+    }
+  ],
+  "pedagogy": {
+    "objectives": [
+      {
+        "id": "denominator",
+        "label": "使用条件事件作为新分母"
+      },
+      {
+        "id": "direction",
+        "label": "区分条件概率的方向"
+      }
+    ],
+    "references": [
+      {
+        "id": "conditional-rule",
+        "label": "课程依据：条件概率定义",
+        "text": "P(B)>0 时，P(A|B)=P(A∩B)/P(B)。等权有限样本表中，它是交集数除以 B 中样本数。"
+      },
+      {
+        "id": "reverse-rule",
+        "label": "课程依据：反向条件",
+        "text": "P(A|B) 与 P(B|A) 的分子相同，但分别以 P(B) 与 P(A) 为分母；一般不能互换。"
+      }
+    ],
+    "misconceptions": [
+      {
+        "id": "joint-as-conditional",
+        "objective": "denominator",
+        "label": "可能继续用总体作为条件概率分母",
+        "hint": "先把不满足条件的样本划掉，再数剩余样本中的交集。",
+        "question": "已知 B 已经发生后，是否还应把不属于 B 的样本算进分母？"
+      },
+      {
+        "id": "reverse-conditional",
+        "objective": "direction",
+        "label": "可能把条件事件与目标事件对调",
+        "hint": "把竖线右边的事件读成“已知”，左边读成“想求”。",
+        "question": "P(A|B) 的已知范围是 A 还是 B？"
+      }
+    ],
+    "checks": [
+      {
+        "id": "denominator-first",
+        "target": "joint-as-conditional",
+        "objective": "denominator",
+        "prompt": "P(A∩B)=0.2 且 P(B)=0.5，那么 P(A|B) 是？",
+        "options": [
+          "0.2",
+          "0.4",
+          "0.1"
+        ],
+        "answer": 1,
+        "feedback": "按定义 0.2/0.5=0.4。",
+        "references": [
+          "conditional-rule"
+        ],
+        "wrong_map": {
+          "0": "joint-as-conditional",
+          "2": "joint-as-conditional"
+        }
+      },
+      {
+        "id": "direction-first",
+        "target": "reverse-conditional",
+        "objective": "direction",
+        "prompt": "交集有 2 个样本，A 共 8 个，B 共 4 个。P(A|B) 是多少？",
+        "options": [
+          "2/8",
+          "2/4",
+          "4/8"
+        ],
+        "answer": 1,
+        "feedback": "条件是 B，因此分母用 B 的 4 个样本。",
+        "references": [
+          "reverse-rule"
+        ],
+        "wrong_map": {
+          "0": "reverse-conditional",
+          "2": "reverse-conditional"
+        }
+      },
+      {
+        "id": "denominator-followup",
+        "target": "joint-as-conditional",
+        "objective": "denominator",
+        "prompt": "总体 20 人，其中 B 有 5 人，A∩B 有 3 人。已知来自 B，满足 A 的概率是？",
+        "options": [
+          "3/20",
+          "5/20",
+          "3/5"
+        ],
+        "answer": 2,
+        "feedback": "既然已知 B，样本范围缩小为那 5 人。",
+        "references": [
+          "conditional-rule"
+        ],
+        "wrong_map": {
+          "0": "joint-as-conditional",
+          "1": "joint-as-conditional"
+        }
+      },
+      {
+        "id": "direction-followup",
+        "target": "reverse-conditional",
+        "objective": "direction",
+        "prompt": "同一张表中 A 有 10 个、B 有 4 个、交集 2 个。P(B|A) 是？",
+        "options": [
+          "2/4",
+          "2/10",
+          "4/10"
+        ],
+        "answer": 1,
+        "feedback": "竖线右侧是 A，分母应为 10。",
+        "references": [
+          "reverse-rule"
+        ],
+        "wrong_map": {
+          "0": "reverse-conditional",
+          "2": "reverse-conditional"
+        }
+      }
+    ]
+  },
+  "transfer": [
+    {
+      "prompt": "新样本表共有 30 个样本，B 有 12 个，交集有 9 个。P(A|B) 为？",
+      "options": [
+        "9/30",
+        "9/12",
+        "12/30"
+      ],
+      "answer": 1,
+      "explanation": "条件 B 下的分母为 12，因此为 0.75。"
+    },
+    {
+      "prompt": "已知 P(A|B)=0.8，能否直接断言 P(B|A)=0.8？",
+      "options": [
+        "可以，两者分子相同",
+        "不能，还取决于 P(A) 与 P(B)",
+        "可以，只要 A 与 B 都非空"
+      ],
+      "answer": 1,
+      "explanation": "共同分子不足以保证概率相同，还需要检查分母。"
+    }
+  ]
+}
