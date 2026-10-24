@@ -1,14 +1,20 @@
 # CausalTA
 
-**先猜想，再验证，把“为什么”学明白。**
+**Your Personal TA — Causal Driven.**
 
-面向计算机与数学 tutorial 的开放式教学助教项目。长期目标是让教师将课程内容接入一套可检查的“诊断 → 教学干预 → 独立迁移 → 证据更新”流程。当前为 **0.6.0 alpha，含可安装 Python 包、教师工作台、六个课程模块与可选策略对照工具**。程序、算法、系统、代数、微积分、概率各有一个原创示例，共 24 道理解检查与 12 道独立迁移题。
+CausalTA 是一个因果驱动的个人学习助教项目，首先服务计算机与数学课程：从你的卡点出发，通过诊断问题区分可能原因，选择一个适量的提示或实验，再用新题检查你能否独立运用。
+
+个人 TA 的目标是围绕你的课程、材料和持续学习证据工作。当前 **0.6.0 alpha** 已支持单次会话内的理解证据、针对性追问、实验和独立迁移，以及本地保存恢复；跨课程长期学习记忆、个人材料接入和开放题目辅导尚待实现。六个原创模块覆盖程序、算法、系统、代数、微积分与概率，共 24 道理解检查和 12 道迁移题。教师工作台用于贡献与修订课程，研究工具用于评估教学策略。
+
+“因果驱动”意味着检查竞争解释、区分观测与干预，并验证帮助之后的独立表现；它不是把知识图谱或一次答错直接当成因果证据。详见 [个人 TA 产品方向](docs/PERSONAL_TA.md) 与 [因果设计](docs/CAUSAL_DESIGN.md)。
 
 ## 立即体验
 
 离线体验需要 Python 3.11+ 和现代浏览器，无第三方运行依赖、API key 或模型下载。
 
 ```bash
+git clone https://github.com/JayLZhou/causal-ta.git
+cd causal-ta
 python3 -m causal_ta.server
 ```
 
@@ -126,10 +132,10 @@ docs/ACCESSIBILITY.md     键盘使用方式、窄屏检查范围与未验证项
 
 代码和本项目原创示例采用 MIT License。第三方参考链接的内容不包含在此许可证中；见 [来源说明](docs/RESEARCH.md)。欢迎首先贡献有误概念、可检查反馈和迁移题的课程模块，见 [贡献说明](CONTRIBUTING.md)。
 
-1000 GitHub stars 是社区增长愿景。发布里程碑优先关注可运行性、真实课程使用、教师复用和持续贡献；目前尚未创建公共 GitHub 仓库。
+1000 GitHub stars 是社区增长愿景。发布里程碑优先关注可运行性、真实课程使用、教师复用和持续贡献；公开源码仓库为 [JayLZhou/causal-ta](https://github.com/JayLZhou/causal-ta)。
 
 执行 `python3 tools/export_release.py` 生成排除会话数据的独立源码包；标准 wheel / sdist 构建见 [发布指南](docs/RELEASE.md)。验证细节见 [验证记录](docs/VALIDATION.md)。
 
 运行 `python3 tools/evaluate_tutor.py --output .data/evaluations/offline-01.json` 可复现离线 TA 场景评测。真实模型评测需显式启用并设置请求次数上限，见 [TA 评测指南](docs/EVALUATION.md)。
 
-0.6 发布候选包含上述工具和键盘交互修复，详见 [本版说明](docs/RELEASE_0.6.md)。目前只有本地构建产物；公开仓库、真实模型与教学试用尚待完成。
+0.6 发布候选包含上述工具和键盘交互修复，详见 [本版说明](docs/RELEASE_0.6.md)。发行包目前仍为本地构建产物；真实模型与教学试用尚待完成。

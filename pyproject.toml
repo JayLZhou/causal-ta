@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "causal-ta"
 dynamic = ["version"]
-description = "面向计算机与数学 tutorial 的可检查教学助教"
+description = "CausalTA：面向计算机与数学的因果驱动个人学习助教"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -24,6 +24,10 @@ classifiers = [
 causal-ta = "causal_ta.server:main"
 causal-ta-validate = "causal_ta.validate:main"
 causal-ta-study = "causal_ta.study:main"
+
+[project.urls]
+Repository = "https://github.com/JayLZhou/causal-ta"
+Issues = "https://github.com/JayLZhou/causal-ta/issues"
 
 [project.optional-dependencies]
 dev = ["build>=1.2", "twine>=6"]

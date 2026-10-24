@@ -1,6 +1,6 @@
 # 维护者构建与发布
 
-当前包名与项目名暂定为 CausalTA / `causal-ta`，仓库归属尚待确定。本文不代表已上传 GitHub 或 PyPI；公共注册表命名需在实际发布前核查。
+项目名为 CausalTA，用户已确认并创建公开仓库 [JayLZhou/causal-ta](https://github.com/JayLZhou/causal-ta)。Python 包名为 `causal-ta`，尚未上传 PyPI；公共注册表命名需在实际发布前核查。
 
 ## 构建产物
 
@@ -40,7 +40,7 @@ CI 已配置 Ubuntu / Python 3.11 与 3.13，以及 macOS、Windows / Python 3.1
 
 ## 公开发布仍待完成
 
-- 确定仓库 owner、名称与公开地址，补充真实仓库链接和问题报告入口。
+- 目标仓库已确定为 `JayLZhou/causal-ta`；以实际远端提交与 Actions 结果确认源码和 CI 状态。
 - 核查注册表名称及维护者权限；未经核查不要引导用户安装同名远端包。
 - 首次推送后查看 CI，修复各平台失败，再创建对应版本的发布说明和校验和。
 - 建立明确的维护者与私密安全问题报告方式。
