@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "causal-ta"
+dynamic = ["version"]
+description = "面向计算机与数学 tutorial 的可检查教学助教"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = []
+keywords = ["education", "tutoring", "causal-inference", "mathematics"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Education",
+]
+
+[project.scripts]
+causal-ta = "causal_ta.server:main"
+causal-ta-validate = "causal_ta.validate:main"
+causal-ta-study = "causal_ta.study:main"
+
+[project.optional-dependencies]
+dev = ["build>=1.2", "twine>=6"]
+
+[tool.setuptools]
+packages = ["causal_ta"]
+include-package-data = false
+
+[tool.setuptools.dynamic]
+version = {attr = "causal_ta.__version__"}
+
+[tool.setuptools.package-data]
+causal_ta = ["coursepacks/*.json", "static/*.html", "static/*.css", "static/*.js"]

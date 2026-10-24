@@ -1,0 +1,265 @@
+{
+  "id": "binary-search-progress",
+  "title": "二分查找为什么会漏掉或卡住？",
+  "subject": "计算机 · 算法与不变式",
+  "description": "用最小反例检查闭区间边界和搜索区间是否严格缩小。把“没有找到”和“不再前进”区分开。",
+  "semantics": "mechanistic_scm",
+  "model_note": "内置确定性程序使用闭区间 [low,high]。closed=1 表示循环用 low<=high，0 表示 low<high；advance=1 表示 low=mid+1，0 表示 low=mid。返回非负索引，-1 表示未找到，-2 表示边界状态重复。数组严格递增。",
+  "variables": {
+    "closed": {
+      "label": "检查最后一个候选",
+      "domain": [
+        0,
+        1
+      ]
+    },
+    "advance": {
+      "label": "排除已检查的 mid",
+      "domain": [
+        0,
+        1
+      ]
+    }
+  },
+  "context": {
+    "values": [
+      1,
+      3,
+      5
+    ],
+    "target": 4
+  },
+  "graph": [
+    "循环条件 ─┐",
+    "low 更新 ─┼─→ 搜索轨迹 → 索引 / 未找到 / 重复状态",
+    "输入数组 ─┘"
+  ],
+  "observation": [
+    "binary_search",
+    "closed",
+    "advance",
+    "values",
+    "target"
+  ],
+  "outcome_label": "在 [1,3,5] 查找 4 的返回码",
+  "source": {
+    "label": "本项目原创例题与可复现检查器",
+    "url": ""
+  },
+  "program": "low, high = 0, len(values) - 1\nseen = set()\nwhile (low <= high if closed else low < high):\n    if (low, high) in seen:\n        return -2  # 重复状态，停止模拟\n    seen.add((low, high))\n    mid = (low + high) // 2\n    if values[mid] == target:\n        return mid\n    if values[mid] < target:\n        low = mid + advance\n    else:\n        high = mid - 1\nreturn -1",
+  "actions": [
+    {
+      "id": "single-element",
+      "title": "只留下一个元素",
+      "description": "在数组 [7] 查找 7，预测返回码。",
+      "measure": [
+        "binary_search",
+        "closed",
+        "advance",
+        "values",
+        "target"
+      ],
+      "explanation": "单元素输入直接检查 low=high 时是否还会访问最后一个候选。",
+      "kind": "observe",
+      "do": {
+        "values": [
+          7
+        ],
+        "target": 7
+      }
+    },
+    {
+      "id": "beyond-last",
+      "title": "查找大于所有元素的值",
+      "description": "在 [1,3,5] 查找 6，预测返回码。",
+      "measure": [
+        "binary_search",
+        "closed",
+        "advance",
+        "values",
+        "target"
+      ],
+      "explanation": "如果 low=mid 后边界重复，程序没有严格缩小区间；-2 与正常返回 -1 不同。",
+      "kind": "observe",
+      "do": {
+        "target": 6
+      }
+    },
+    {
+      "id": "fix-advance",
+      "title": "只修复右移规则",
+      "description": "保持原输入，只设置 advance=1，预测返回码。",
+      "measure": [
+        "binary_search",
+        "closed",
+        "advance",
+        "values",
+        "target"
+      ],
+      "explanation": "排除已经检查且小于目标的 mid，能使右侧搜索继续前进。",
+      "kind": "do",
+      "do": {
+        "advance": 1
+      }
+    },
+    {
+      "id": "fix-final",
+      "title": "只修复最后一个候选的检查",
+      "description": "保持原输入，只设置 closed=1，预测返回码。",
+      "measure": [
+        "binary_search",
+        "closed",
+        "advance",
+        "values",
+        "target"
+      ],
+      "explanation": "修复闭区间条件未必能修复不前进的更新规则；两个机制需要分别检查。",
+      "kind": "do",
+      "do": {
+        "closed": 1
+      }
+    }
+  ],
+  "pedagogy": {
+    "objectives": [
+      {
+        "id": "interval",
+        "label": "理解闭区间最后一个候选"
+      },
+      {
+        "id": "progress",
+        "label": "保证搜索区间严格缩小"
+      }
+    ],
+    "references": [
+      {
+        "id": "closed-rule",
+        "label": "课程依据：闭区间不变式",
+        "text": "在闭区间 [low,high] 表示候选时，low=high 仍有一个候选，只有 low>high 才为空区间。"
+      },
+      {
+        "id": "progress-rule",
+        "label": "课程依据：单调缩小",
+        "text": "若 values[mid]<target，mid 已不能是答案，应令 low=mid+1。令 low=mid 可能在 mid=low 时不改变区间。"
+      }
+    ],
+    "misconceptions": [
+      {
+        "id": "skip-last",
+        "objective": "interval",
+        "label": "可能误把单元素区间当作空区间",
+        "hint": "画出 low=high 时那个唯一位置。",
+        "question": "区间 [2,2] 包含几个索引？"
+      },
+      {
+        "id": "stuck-mid",
+        "objective": "progress",
+        "label": "可能认为 low=mid 总能推进",
+        "hint": "先找一个 mid 恰好等于 low 的小区间。",
+        "question": "当 low=0、high=1 时，整数除法得到哪个 mid？"
+      }
+    ],
+    "checks": [
+      {
+        "id": "closed-first",
+        "target": "skip-last",
+        "objective": "interval",
+        "prompt": "闭区间 [low,high] 中 low=high 时还剩几个候选？",
+        "options": [
+          "0 个",
+          "1 个",
+          "2 个"
+        ],
+        "answer": 1,
+        "feedback": "两个端点重合仍保留该位置。",
+        "references": [
+          "closed-rule"
+        ],
+        "wrong_map": {
+          "0": "skip-last",
+          "2": "skip-last"
+        }
+      },
+      {
+        "id": "advance-first",
+        "target": "stuck-mid",
+        "objective": "progress",
+        "prompt": "low=0、high=1、mid=0，若 target 大于 values[mid]，令 low=mid 会怎样？",
+        "options": [
+          "区间严格缩小",
+          "low 不变，可能反复访问同一状态"
+        ],
+        "answer": 1,
+        "feedback": "low=mid=0 没有排除已检查位置。",
+        "references": [
+          "progress-rule"
+        ],
+        "wrong_map": {
+          "0": "stuck-mid"
+        }
+      },
+      {
+        "id": "closed-followup",
+        "target": "skip-last",
+        "objective": "interval",
+        "prompt": "闭区间表示下，哪种条件才说明候选已为空？",
+        "options": [
+          "low=high",
+          "low>high",
+          "high-low=1"
+        ],
+        "answer": 1,
+        "feedback": "low>high 时没有任何索引同时处于两端之间。",
+        "references": [
+          "closed-rule"
+        ],
+        "wrong_map": {
+          "0": "skip-last",
+          "2": "skip-last"
+        }
+      },
+      {
+        "id": "advance-followup",
+        "target": "stuck-mid",
+        "objective": "progress",
+        "prompt": "已知 values[mid]<target，下一轮右侧搜索的 low 应取？",
+        "options": [
+          "mid",
+          "mid+1",
+          "mid-1"
+        ],
+        "answer": 1,
+        "feedback": "mid 已经比较过且不可能等于目标，应排除。",
+        "references": [
+          "progress-rule"
+        ],
+        "wrong_map": {
+          "0": "stuck-mid",
+          "2": "stuck-mid"
+        }
+      }
+    ]
+  },
+  "transfer": [
+    {
+      "prompt": "新数组 [2,8,13]，闭区间搜索来到 low=high=2，目标为 13。下一步应怎样做？",
+      "options": [
+        "立即报告未找到",
+        "检查索引 2",
+        "把 low 设为 1"
+      ],
+      "answer": 1,
+      "explanation": "闭区间还剩一个候选，必须检查它。"
+    },
+    {
+      "prompt": "新状态 low=4、high=5，mid=4 且 a[mid]<target。哪种更新保证排除这个 mid？",
+      "options": [
+        "low=4",
+        "low=mid+1",
+        "high=mid"
+      ],
+      "answer": 1,
+      "explanation": "low=mid+1 将已排除的位置移出候选区间。"
+    }
+  ]
+}

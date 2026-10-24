@@ -1,0 +1,395 @@
+{
+  "id": "derivative-change",
+  "title": "导数是函数值，还是变化率？",
+  "subject": "数学 · 微积分",
+  "description": "通过函数值、差商与参数变换，辨别二次函数的系数，理解导数为何不等于 f(x)/x。",
+  "semantics": "mathematical_dependency",
+  "model_note": "f(x)=a x²+b x+c；f′(x)=2ax+b。差商 [f(x+h)−f(x)]/h 在本模型等于 2ax+b+ah。实验是精确函数计算与参数变换，不是经验因果推断。",
+  "variables": {
+    "a": {
+      "label": "二次项系数 a",
+      "domain": [
+        1,
+        2
+      ]
+    },
+    "b": {
+      "label": "一次项系数 b",
+      "domain": [
+        -1,
+        0,
+        1
+      ]
+    },
+    "c": {
+      "label": "常数项 c",
+      "domain": [
+        -2,
+        2
+      ]
+    }
+  },
+  "context": {
+    "x": 1,
+    "h": 1
+  },
+  "graph": [
+    "系数 a、b、c → f(x)",
+    "a、b 与位置 x → 局部变化率",
+    "非零步长 h → 差商误差 ah"
+  ],
+  "observation": [
+    "add",
+    [
+      "mul",
+      "a",
+      "x",
+      "x"
+    ],
+    [
+      "mul",
+      "b",
+      "x"
+    ],
+    "c"
+  ],
+  "outcome_label": "已知 f(1)",
+  "source": {
+    "label": "本项目原创例题与可复现检查器",
+    "url": ""
+  },
+  "actions": [
+    {
+      "id": "value-zero",
+      "title": "观察 f(0)",
+      "description": "输入取 0，预测函数值。",
+      "measure": [
+        "add",
+        [
+          "mul",
+          "a",
+          "x",
+          "x"
+        ],
+        [
+          "mul",
+          "b",
+          "x"
+        ],
+        "c"
+      ],
+      "explanation": "函数在 0 的值等于 c；它不等于该处的导数 b。",
+      "kind": "observe",
+      "do": {
+        "x": 0
+      }
+    },
+    {
+      "id": "derivative-zero",
+      "title": "观察 f′(0)",
+      "description": "输入取 0，预测导数。",
+      "measure": [
+        "add",
+        [
+          "mul",
+          2,
+          "a",
+          "x"
+        ],
+        "b"
+      ],
+      "explanation": "二次函数在 0 的导数为 b，常数项不影响变化率。",
+      "kind": "observe",
+      "do": {
+        "x": 0
+      }
+    },
+    {
+      "id": "secant-one",
+      "title": "取步长 h=1 的差商",
+      "description": "在 x=1，用 h=1，预测差商。",
+      "measure": [
+        "div",
+        [
+          "add",
+          [
+            "add",
+            [
+              "mul",
+              "a",
+              [
+                "add",
+                "x",
+                "h"
+              ],
+              [
+                "add",
+                "x",
+                "h"
+              ]
+            ],
+            [
+              "mul",
+              "b",
+              [
+                "add",
+                "x",
+                "h"
+              ]
+            ],
+            "c"
+          ],
+          [
+            "mul",
+            -1,
+            [
+              "add",
+              [
+                "mul",
+                "a",
+                "x",
+                "x"
+              ],
+              [
+                "mul",
+                "b",
+                "x"
+              ],
+              "c"
+            ]
+          ]
+        ],
+        "h"
+      ],
+      "explanation": "差商为 2a+b+a h，有限步长通常不等于极限中的导数。",
+      "kind": "observe"
+    },
+    {
+      "id": "secant-half",
+      "title": "把差商步长减半",
+      "description": "在 x=1，用 h=0.5，预测差商。",
+      "measure": [
+        "div",
+        [
+          "add",
+          [
+            "add",
+            [
+              "mul",
+              "a",
+              [
+                "add",
+                "x",
+                "h"
+              ],
+              [
+                "add",
+                "x",
+                "h"
+              ]
+            ],
+            [
+              "mul",
+              "b",
+              [
+                "add",
+                "x",
+                "h"
+              ]
+            ],
+            "c"
+          ],
+          [
+            "mul",
+            -1,
+            [
+              "add",
+              [
+                "mul",
+                "a",
+                "x",
+                "x"
+              ],
+              [
+                "mul",
+                "b",
+                "x"
+              ],
+              "c"
+            ]
+          ]
+        ],
+        "h"
+      ],
+      "explanation": "步长减半也使该二次函数的差商误差减半。",
+      "kind": "observe",
+      "do": {
+        "h": 0.5
+      }
+    },
+    {
+      "id": "shift-constant",
+      "title": "只替换常数项，再看导数",
+      "description": "临时令 c=2，仍在 x=1 处观察导数。",
+      "measure": [
+        "add",
+        [
+          "mul",
+          2,
+          "a",
+          "x"
+        ],
+        "b"
+      ],
+      "explanation": "竖直平移不改变局部斜率；这是数学依赖关系中的不变性。",
+      "kind": "transform",
+      "do": {
+        "c": 2
+      }
+    }
+  ],
+  "pedagogy": {
+    "objectives": [
+      {
+        "id": "rate",
+        "label": "区分函数值和局部变化率"
+      },
+      {
+        "id": "constant",
+        "label": "理解常数项对导数的影响"
+      }
+    ],
+    "references": [
+      {
+        "id": "derivative-definition",
+        "label": "课程依据：导数定义",
+        "text": "导数是 h→0 时 [f(x+h)−f(x)]/h 的极限，不是通常意义下的 f(x)/x。二次函数 ax²+bx+c 的导数是 2ax+b。"
+      },
+      {
+        "id": "constant-rule",
+        "label": "课程依据：常数平移",
+        "text": "给函数加常数 K 后，差商中的 K 相减抵消，因此导数不变。"
+      }
+    ],
+    "misconceptions": [
+      {
+        "id": "value-ratio",
+        "objective": "rate",
+        "label": "可能把 f(x)/x 当成局部导数",
+        "hint": "在同一点分别计算函数值与切线斜率，检查它们是否表示同一件事。",
+        "question": "对于 f(x)=x²，在 x=2 处 f(x)/x 与 f′(x) 分别是多少？"
+      },
+      {
+        "id": "constant-derivative",
+        "objective": "constant",
+        "label": "可能把常数项也加到导数中",
+        "hint": "先在 f(x+h)−f(x) 中标出两次出现的常数。",
+        "question": "函数整体上移后，曲线在某一点的倾斜方向是否改变？"
+      }
+    ],
+    "checks": [
+      {
+        "id": "rate-first",
+        "target": "value-ratio",
+        "objective": "rate",
+        "prompt": "f(x)=x²，在 x=3 处的导数是？",
+        "options": [
+          "3",
+          "6",
+          "9"
+        ],
+        "answer": 1,
+        "feedback": "导数为 2x，因此在 3 处为 6；函数值为 9。",
+        "references": [
+          "derivative-definition"
+        ],
+        "wrong_map": {
+          "0": "value-ratio",
+          "2": "value-ratio"
+        }
+      },
+      {
+        "id": "constant-first",
+        "target": "constant-derivative",
+        "objective": "constant",
+        "prompt": "把 f(x)=x² 改为 g(x)=x²+7，导数怎样变？",
+        "options": [
+          "加 7",
+          "不变",
+          "乘 7"
+        ],
+        "answer": 1,
+        "feedback": "常数项在差商相减时抵消。",
+        "references": [
+          "constant-rule"
+        ],
+        "wrong_map": {
+          "0": "constant-derivative",
+          "2": "constant-derivative"
+        }
+      },
+      {
+        "id": "rate-followup",
+        "target": "value-ratio",
+        "objective": "rate",
+        "prompt": "p(x)=2x²，在 x=1 处，p(1) 与 p′(1) 分别是？",
+        "options": [
+          "2 和 2",
+          "2 和 4",
+          "4 和 2"
+        ],
+        "answer": 1,
+        "feedback": "函数值为 2，导数 4x 在 1 处为 4。",
+        "references": [
+          "derivative-definition"
+        ],
+        "wrong_map": {
+          "0": "value-ratio",
+          "2": "value-ratio"
+        }
+      },
+      {
+        "id": "constant-followup",
+        "target": "constant-derivative",
+        "objective": "constant",
+        "prompt": "q(x)=3x²−5，q′(0) 是多少？",
+        "options": [
+          "−5",
+          "0",
+          "3"
+        ],
+        "answer": 1,
+        "feedback": "导数是 6x，在 0 处为 0。",
+        "references": [
+          "constant-rule"
+        ],
+        "wrong_map": {
+          "0": "constant-derivative",
+          "2": "constant-derivative"
+        }
+      }
+    ]
+  },
+  "transfer": [
+    {
+      "prompt": "新函数 r(x)=3x²−2x+7，r′(2) 是多少？",
+      "options": [
+        "10",
+        "15",
+        "5"
+      ],
+      "answer": 0,
+      "explanation": "r′(x)=6x−2，因此 r′(2)=10。"
+    },
+    {
+      "prompt": "将任意可导函数 f 改为 g(x)=f(x)+9，在同一个 x 处两者导数的差是多少？",
+      "options": [
+        "9",
+        "0",
+        "取决于 f(x) 的值"
+      ],
+      "answer": 1,
+      "explanation": "常数平移不会改变导数。"
+    }
+  ]
+}

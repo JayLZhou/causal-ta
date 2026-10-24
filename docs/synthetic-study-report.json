@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "id": "synthetic-demo",
+    "title": "合成数据：验证分母与缺失结果报告",
+    "purpose": "预设人为分数，只检查软件计算",
+    "contact": "本机开发演练",
+    "created_at": "2026-10-24T17:38:49.169999+00:00",
+    "data_kind": "synthetic",
+    "course_version": "1d784a092ad3071d5173ce2578ddf55c38ce6a2519a96feb128a99bc99be2ca9",
+    "policy_version": "1",
+    "arms": {
+      "diagnostic": 0.5,
+      "fixed": 0.5
+    },
+    "unit": "每个参与码；负责人须保证每人仅领一个码",
+    "consent": "参与是自愿的，不影响普通练习。两种策略以各 50% 的概率分配；同一参与码只有一次学习会话。记录课程版本、分组、答题、实验、离线对话与迁移表现，仅保存在本机。请勿输入姓名或身份信息。可以随时停止，或删除学习记录并退出；退出后保留分组与退出计数，用于如实报告缺失结果，参与码失效。报告不导出对话或参与码。此工具不是防作弊或身份认证系统。",
+    "outcome": "第一次学习会话全部独立迁移题的首次作答正确比例；未全部完成记为缺失",
+    "analysis": "按最初分配组报告全部已分配参与码、完整结果、未完成和退出；缺失结果取 [0,1] 给出均值差界限，不将其当置信区间",
+    "tutor": "offline",
+    "application_version": "0.4.0a1",
+    "course_title": "同一个函数值，能确定同一条直线吗？",
+    "arm_labels": {
+      "diagnostic": "诊断后追问",
+      "fixed": "固定顺序"
+    }
+  },
+  "closed": false,
+  "unused_invites": 1,
+  "groups": {
+    "diagnostic": {
+      "assigned": 3,
+      "complete": 2,
+      "incomplete": 1,
+      "withdrawn": 0,
+      "observed_mean": 0.75,
+      "missing": 1,
+      "mean_bounds": [
+        0.5,
+        0.8333333333333334
+      ]
+    },
+    "fixed": {
+      "assigned": 3,
+      "complete": 2,
+      "incomplete": 0,
+      "withdrawn": 1,
+      "observed_mean": 0.25,
+      "missing": 1,
+      "mean_bounds": [
+        0.16666666666666666,
+        0.5
+      ]
+    }
+  },
+  "observed_completer_difference": 0.5,
+  "all_assigned_mean_difference": null,
+  "missing_outcome_difference_bounds": [
+    0.0,
+    0.6666666666666667
+  ],
+  "note": "诊断组减固定组。完成者差值仅作描述；缺失值界限不是置信区间，没有处理抽样不确定性、重复身份或班级聚类。合成数据只能验证软件，不能证明教学效果。"
+}

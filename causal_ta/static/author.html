@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CausalTA · 教师工作台</title><link rel="stylesheet" href="/style.css"><script src="/author.js" defer></script></head>
+<body><header><a class="brand" href="/">Causal<span>TA</span><small>教师工作台</small></a><a href="/">返回学习入口 ↗</a></header><main>
+<section class="hero"><div class="eyebrow">把你的教学设计变成可检查的课程</div><h1>从一个例子，<br><span>开始设计一次探索。</span></h1><p>复制课程、修改问题、检查模型，再保存为自己的课程。结构校验帮助发现错误；例题与反馈仍需要你审核。</p></section>
+<p id="mode" class="observation" role="status">正在读取工作台状态…</p><p id="error" role="alert"></p>
+<section class="panel"><h2>01 · 选择起点</h2><label for="template">课程模板</label><select id="template" disabled></select><button id="load" disabled>复制为新课程</button><p class="muted">载入模板会替换当前草稿。请先下载需要保留的版本。</p></section>
+<section id="editor" hidden><div class="columns"><div>
+<article class="panel"><h2>02 · 定义你的课程</h2><div id="metadata"></div><details><summary>编辑学习目标与 TA 追问</summary><div id="pedagogy"></div></details></article>
+<article class="panel"><h2>03 · 理解检查</h2><p class="muted">选项序号从 0 开始。修改选项含义或正确答案后，请同步审核误解映射；映射不是学生能力诊断。</p><div id="checks"></div></article>
+<article class="panel"><h2>04 · 独立迁移</h2><p class="muted">使用与练习不同的新问题，检查学生是否能独立运用所学。</p><div id="transfer"></div></article>
+</div><aside><article class="panel"><h2>校验与保存</h2><p>检查表达式、引用关系与全部候选状态的可辨识性。</p><button id="validate">校验当前草稿</button><p id="validation" aria-live="polite">尚未校验。</p><button id="save" disabled>保存为新课程</button><p id="saved" aria-live="polite"></p><button class="quiet" id="download">下载课程 JSON</button><p class="muted">保存后可在学习入口立即试用。课程存于本机数据目录；同名课程不会被覆盖。</p></article>
+<article class="panel"><h2>模型与完整 JSON</h2><p class="muted">变量、实验、引用与误解映射可在此编辑。这里的 program 只展示，不执行；检查器仅支持内置操作。</p><label for="raw">课程 JSON</label><textarea id="raw" rows="25" spellcheck="false"></textarea><button id="apply" class="quiet">应用 JSON 到表单</button><p id="raw-note" class="muted"></p></article></aside></div></section>
+<footer>本机作者工具 · 校验通过不代表内容正确或已证明教学效果 · α 0.5</footer></main></body></html>

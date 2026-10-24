@@ -1,0 +1,12 @@
+include README.md LICENSE CONTRIBUTING.md SECURITY.md pyproject.toml MANIFEST.in .gitignore
+recursive-include causal_ta *.py *.json *.html *.css *.js
+recursive-include tests *.py
+recursive-include tools *.py
+recursive-include docs *.md *.json *.png
+recursive-include .github *.yml *.md
+prune .data
+prune .venv
+prune .venv-build
+prune build
+prune dist
+global-exclude __pycache__ *.py[cod] *.sqlite3* .env .env.* .DS_Store

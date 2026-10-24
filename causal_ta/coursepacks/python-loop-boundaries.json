@@ -1,0 +1,247 @@
+{
+  "id": "python-loop-boundaries",
+  "title": "循环为什么少算了一项？",
+  "subject": "计算机 · 程序与边界",
+  "description": "比较循环的累加和与迭代次数，找出起点和终点策略。相同输出不一定来自相同的执行过程。",
+  "semantics": "mechanistic_scm",
+  "model_note": "受控程序：range(start, n+inclusive)。start 与 inclusive 各为 0 或 1。实验执行内置检查器，不运行用户代码。累加 0 不改变和，但会改变循环次数。",
+  "variables": {
+    "start": {
+      "label": "起点 start",
+      "domain": [
+        0,
+        1
+      ]
+    },
+    "inclusive": {
+      "label": "包含终点 n",
+      "domain": [
+        0,
+        1
+      ]
+    }
+  },
+  "context": {
+    "n": 3
+  },
+  "graph": [
+    "起点 start ─┐",
+    "终点策略 ──┼─→ range → 累加和 / 迭代次数",
+    "输入 n ────┘"
+  ],
+  "observation": [
+    "loop_sum",
+    "start",
+    "inclusive",
+    "n"
+  ],
+  "outcome_label": "输入 n=3 的累加和",
+  "source": {
+    "label": "本项目原创例题与可复现检查器",
+    "url": ""
+  },
+  "program": "def trace(start, inclusive, n):\n    total, count = 0, 0\n    for i in range(start, n + inclusive):\n        total += i\n        count += 1\n    return total, count\n\n# start / inclusive 是待辨识的两个配置。",
+  "actions": [
+    {
+      "id": "count-three",
+      "title": "数一数迭代次数",
+      "description": "仍取 n=3，预测 count。",
+      "measure": [
+        "loop_count",
+        "start",
+        "inclusive",
+        "n"
+      ],
+      "explanation": "累加 0 不改变 total，却会让 count 增加一次；不同测量可以区分相同输出。",
+      "kind": "observe"
+    },
+    {
+      "id": "sum-one",
+      "title": "把输入缩小到 n=1",
+      "description": "原配置不变，预测 total。",
+      "measure": [
+        "loop_sum",
+        "start",
+        "inclusive",
+        "n"
+      ],
+      "explanation": "最小输入常能暴露终点是否被包括；但累加和仍可能无法区分是否访问 0。",
+      "kind": "observe",
+      "do": {
+        "n": 1
+      }
+    },
+    {
+      "id": "include-end",
+      "title": "只让循环包含终点",
+      "description": "临时设 inclusive=1，n=3；预测 total。",
+      "measure": [
+        "loop_sum",
+        "start",
+        "inclusive",
+        "n"
+      ],
+      "explanation": "这次只替换终点条件，和的变化来自新增的终点项。",
+      "kind": "do",
+      "do": {
+        "inclusive": 1
+      }
+    },
+    {
+      "id": "start-at-one",
+      "title": "只让循环从 1 开始",
+      "description": "临时设 start=1，n=3；预测 count。",
+      "measure": [
+        "loop_count",
+        "start",
+        "inclusive",
+        "n"
+      ],
+      "explanation": "改变起点后，迭代次数可能变化；这与累加和的变化不是同一指标。",
+      "kind": "do",
+      "do": {
+        "start": 1
+      }
+    }
+  ],
+  "pedagogy": {
+    "objectives": [
+      {
+        "id": "range",
+        "label": "理解半开区间"
+      },
+      {
+        "id": "measurement",
+        "label": "区分输出与执行过程"
+      }
+    ],
+    "references": [
+      {
+        "id": "range-rule",
+        "label": "课程依据：range 的边界",
+        "text": "正步长 range(a,b) 包含 a，但不包含 b；range(1,4) 依次产生 1、2、3。"
+      },
+      {
+        "id": "zero-trace",
+        "label": "课程依据：测量选择",
+        "text": "累加 0 不改变总和，但会增加一次循环；只看总和无法辨别是否访问过 0。"
+      }
+    ],
+    "misconceptions": [
+      {
+        "id": "inclusive-error",
+        "objective": "range",
+        "label": "可能把 range 的终点当成包含端点",
+        "hint": "先列出最后一个实际迭代值，再决定是否访问了上界。",
+        "question": "range(1,4) 中最后一个数是 3 还是 4？"
+      },
+      {
+        "id": "same-output",
+        "objective": "measurement",
+        "label": "可能把相同总和当作相同执行过程",
+        "hint": "想一想对 total 没有贡献的值，是否仍然消耗一次迭代。",
+        "question": "从 0 开始与从 1 开始，会不会得到相同总和但不同次数？"
+      }
+    ],
+    "checks": [
+      {
+        "id": "range-first",
+        "target": "inclusive-error",
+        "objective": "range",
+        "prompt": "list(range(1,4)) 是什么？",
+        "options": [
+          "[1,2,3,4]",
+          "[1,2,3]",
+          "[0,1,2,3]"
+        ],
+        "answer": 1,
+        "feedback": "range 的右边界不包含在结果里。",
+        "references": [
+          "range-rule"
+        ],
+        "wrong_map": {
+          "0": "inclusive-error",
+          "2": "inclusive-error"
+        }
+      },
+      {
+        "id": "trace-first",
+        "target": "same-output",
+        "objective": "measurement",
+        "prompt": "sum(range(0,3)) 与 sum(range(1,3)) 都为 3，能断言循环次数相同吗？",
+        "options": [
+          "能，和相同就说明过程相同",
+          "不能，前者还迭代了 0"
+        ],
+        "answer": 1,
+        "feedback": "前者有 3 次迭代，后者只有 2 次。",
+        "references": [
+          "zero-trace"
+        ],
+        "wrong_map": {
+          "0": "same-output"
+        }
+      },
+      {
+        "id": "range-followup",
+        "target": "inclusive-error",
+        "objective": "range",
+        "prompt": "要遍历 1、2、3、4、5，应该使用哪个范围？",
+        "options": [
+          "range(1,5)",
+          "range(0,5)",
+          "range(1,6)"
+        ],
+        "answer": 2,
+        "feedback": "需要把不包含的上界设置为 6。",
+        "references": [
+          "range-rule"
+        ],
+        "wrong_map": {
+          "0": "inclusive-error",
+          "1": "inclusive-error"
+        }
+      },
+      {
+        "id": "trace-followup",
+        "target": "same-output",
+        "objective": "measurement",
+        "prompt": "两个循环总和相同，想检查是否多访问了 0，最有区分力的记录是？",
+        "options": [
+          "只再看一次总和",
+          "记录迭代次数或访问序列"
+        ],
+        "answer": 1,
+        "feedback": "次数或轨迹能看到被总和隐藏的迭代。",
+        "references": [
+          "zero-trace"
+        ],
+        "wrong_map": {
+          "0": "same-output"
+        }
+      }
+    ]
+  },
+  "transfer": [
+    {
+      "prompt": "新任务：遍历整数 2 到 7（含 7），应使用哪个 Python 范围？",
+      "options": [
+        "range(2,7)",
+        "range(2,8)",
+        "range(1,7)"
+      ],
+      "answer": 1,
+      "explanation": "range 的上界不包含，因此应设置为 8。"
+    },
+    {
+      "prompt": "两个实现得到相同总和，但一个多访问了值 0。可以得出什么？",
+      "options": [
+        "两个实现所有行为必然相同",
+        "仅凭总和无法确定执行轨迹相同",
+        "多访问 0 一定让总和增大"
+      ],
+      "answer": 1,
+      "explanation": "总和不能反映贡献为 0 的迭代；需要额外测量。"
+    }
+  ]
+}

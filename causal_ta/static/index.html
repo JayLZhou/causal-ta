@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CausalTA · 学会追问为什么</title><link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header><a class="brand" href="/">Causal<span>TA</span><small>学习，不止得到答案。</small></a><a href="/teach">教师工作台 ↗</a><span class="tag">本地实验版 · α 0.5</span></header>
+  <main>
+    <section class="hero"><div class="eyebrow">COMPUTER SCIENCE × MATHEMATICS</div><h1>先猜想，再验证。<br><span>把“为什么”学明白。</span></h1><p>让助教陪你提出解释、设计实验、检查证据，最后独立解决一道新问题。</p></section>
+    <section id="catalog" aria-label="课程选择"></section>
+    <section id="study-entry" class="panel" hidden><details><summary>我有教学研究参与码</summary><p>先查看研究说明，再决定是否参加。普通课程仍可直接使用。</p><form id="study-info-form"><label for="study-code">参与码（请勿公开分享）</label><input id="study-code" type="password" maxlength="32" autocomplete="off" required><button type="submit">查看研究说明</button></form><div id="study-info" hidden><h2 id="study-title"></h2><p id="study-purpose"></p><p id="study-contact"></p><p id="study-kind" class="observation"></p><p id="study-consent-text"></p><label><input type="checkbox" id="study-consent">我已阅读说明，自愿参加或恢复此前的研究会话</label><button id="study-join">参加 / 恢复研究</button></div></details></section>
+    <p id="error" role="alert"></p>
+    <section id="workspace" hidden>
+      <div class="toolbar"><span id="lesson-name"></span><div><button id="export" class="quiet">导出学习记录</button><button id="restart" class="quiet">重新开始</button><button id="forget" class="quiet">删除本次记录</button></div></div>
+      <article id="forget-panel" class="panel" hidden><h2>删除本次学习记录？</h2><p id="forget-notice"></p><button id="forget-confirm">确认永久删除</button><button id="forget-cancel" class="quiet">保留记录</button></article>
+      <p id="study-session-note" class="observation" hidden></p>
+      <ol class="steps" aria-label="学习阶段"><li id="step-investigate">01 · 预测与实验</li><li id="step-transfer">02 · 独立迁移</li><li id="step-complete">03 · 回看证据</li></ol>
+      <div class="columns"><div>
+        <article class="panel"><div class="eyebrow">YOUR TUTOR</div><h2>下一步，怎样学？</h2><p id="coach" aria-live="polite"></p><div id="observation" class="observation"></div></article>
+        <article id="program-panel" class="panel" hidden><h2>读一遍这个程序</h2><pre id="program"></pre><p class="muted">本轮观察与实验对应的程序规则。</p></article>
+        <article id="check-panel" class="panel"><div class="eyebrow">检查我的理解</div><h2>先区分两种想法</h2><p id="check-prompt"></p><p id="check-reason" class="muted"></p><form id="check-form"><div id="check-options"></div><button type="submit">回答理解检查</button></form><p id="check-feedback" aria-live="polite"></p><p class="muted">这是带反馈的练习，不计入独立迁移成绩；一次答错只提供一个待核查的线索。</p></article>
+        <article id="tutor-panel" class="panel"><h2>与 TA 一起追问</h2><p id="tutor-mode" class="muted"></p><div id="tutor-conversation" aria-live="polite"></div><form id="tutor-form"><label for="tutor-message">我卡在哪里？</label><textarea id="tutor-message" rows="3" maxlength="2000" required placeholder="描述你的预测或推导，以及不确定的那一步。"></textarea><label id="remote-choice" hidden><input type="checkbox" id="use-remote">使用联网 TA；发送本次消息、近期对话与学习证据至 OpenAI</label><button type="submit">请给我一个追问</button></form></article>
+        <article id="experiment-panel" class="panel"><h2>选一次实验</h2><p class="muted">每次实验都从原始状态出发。先写预测，再看结果。</p><div id="actions"></div><form id="experiment-form"><label for="prediction">我的数值预测</label><p id="prediction-note" class="muted"></p><input id="prediction" name="prediction" type="number" step="any" required placeholder="例如 0、1 或 −2"><button type="submit">验证我的预测 →</button></form></article>
+        <article id="diagnose-panel" class="panel"><h2>提交我的解释</h2><p class="muted">综合现有证据，为原始状态中的每个变量赋值。</p><form id="diagnose-form"><div id="variables"></div><button type="submit">提交解释，进入迁移练习</button></form><p id="diagnosis-feedback" aria-live="polite"></p></article>
+        <article id="transfer-panel" class="panel" hidden><div class="eyebrow">TRY IT YOURSELF</div><h2>换一个问题，还能解释吗？</h2><p id="transfer-question"></p><form id="transfer-form"><div id="transfer-options"></div><button type="submit">提交首次作答</button></form></article>
+        <article id="complete-panel" class="panel" hidden><h2>本轮学习回顾</h2><div id="results"></div><p class="muted">这是本轮的练习记录，不是能力认证或教学效果的因果证明。</p></article>
+        <article id="history-panel" class="panel"><h2>我的证据轨迹</h2><div id="history" aria-live="polite"></div></article>
+      </div><aside id="learning-sidebar">
+        <article id="learner-panel" class="panel"><h2>理解的证据</h2><div id="learner-objectives"></div><div id="learner-hypotheses"></div><p class="muted">不同于题目的候选状态，这里记录的是你的理解检查。证据有限时保留不确定。</p><p id="course-version" class="muted"></p></article>
+        <article class="panel model"><div class="eyebrow">MAKE THE MODEL VISIBLE</div><h2>我们在什么模型里推理？</h2><span id="semantics" class="tag"></span><pre id="graph"></pre><p id="model-note" class="muted"></p><a id="source" target="_blank" rel="noreferrer"></a></article>
+        <article id="candidate-panel" class="panel"><h2>证据留下的解释</h2><p id="candidate-count"></p><details><summary>查看候选状态</summary><div id="candidates"></div></details><p class="muted">信息增益基于这些候选状态的均匀先验，仅衡量模型内可区分性。</p></article>
+        <article class="panel note"><h3>让思考留在你手里</h3><p>TA 根据答题证据选择追问；你负责预测、解释和迁移。自由文字不参与自动评分，迁移期间暂停 TA 提示。</p></article>
+      </aside></div>
+    </section>
+    <footer>原创示例 · 默认离线，联网 TA 需主动启用 · 内置六个课程模块，支持通过课程包扩展</footer>
+  </main>
+</body></html>
