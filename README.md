@@ -78,6 +78,7 @@ python3 tools/demo_study.py
 | 预测、解释、独立迁移 | 已实现；迁移题仅记录本会话首次回答 |
 | 会话保存、恢复、导出 | 已实现；本机 SQLite |
 | 自由语言 Socratic 对话 | 可选 OpenAI 接口已实现，模拟协议测试通过；真实模型质量待验证 |
+| TA 评测 | 六门课程共 24 个合成场景；离线工程检查通过，18 条语义审阅待教师完成 |
 | 教师编辑器 | 已实现本机复制、引导编辑、完整 JSON、校验、保存与下载 |
 | 教材自动导入 | 待实现 |
 | 学生误概念假设与追问 | 已实现规则式证据记录、针对性检查；未校准能力概率或验证诊断准确性 |
@@ -110,6 +111,7 @@ docs/COURSE_AUTHORING.md  课程接入规范
 docs/RESEARCH.md          已核实的相关工作与场景依据
 docs/INSTALL.md           源码 / wheel 安装、数据目录与迁移
 docs/RELEASE.md           构建、验证与公开发布前待办
+docs/EVALUATION.md        固定场景评测、请求次数预算与教师审阅表
 ```
 
 ## 为什么值得做
@@ -125,3 +127,5 @@ docs/RELEASE.md           构建、验证与公开发布前待办
 1000 GitHub stars 是社区增长愿景。发布里程碑优先关注可运行性、真实课程使用、教师复用和持续贡献；目前尚未创建公共 GitHub 仓库。
 
 执行 `python3 tools/export_release.py` 生成排除会话数据的独立源码包；标准 wheel / sdist 构建见 [发布指南](docs/RELEASE.md)。验证细节见 [验证记录](docs/VALIDATION.md)。
+
+运行 `python3 tools/evaluate_tutor.py --output .data/evaluations/offline-01.json` 可复现离线 TA 场景评测。真实模型评测需显式启用并设置请求次数上限，见 [TA 评测指南](docs/EVALUATION.md)。
