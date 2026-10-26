@@ -14,14 +14,16 @@ try{
  for(const e of journal.entries)await run([...wrangler,'d1','execute','DB','--local','--config',config,'--persist-to',state,'--file',path.join(root,'drizzle',e.tag+'.sql')]);
  const port=await new Promise((resolve,reject)=>{const s=net.createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=s.address().port;s.close(()=>resolve(p));});});
  const base=`http://127.0.0.1:${port}`;
- server=spawn(process.execPath,[...wrangler,'dev','--local','--config',config,'--persist-to',state,'--ip','127.0.0.1','--port',String(port),'--inspector-port','0'],{cwd:root,stdio:['ignore','pipe','pipe']});
- for(const stream of [server.stdout,server.stderr])stream.on('data',b=>{output=(output+b.toString()).slice(-12000);});
+ // Freeze the built worker for integration tests; dev file watchers can restart mid-POST on Linux.
+ await import('../scripts/sites-env.mjs');
+ const {unstable_dev}=await import('wrangler');
+ server=await unstable_dev(path.join(root,'dist/server/index.js'),{config,ip:'127.0.0.1',port,inspectorPort:0,local:true,persistTo:state,bundle:false,logLevel:'warn',experimental:{watch:false,disableDevRegistry:true,disableExperimentalWarning:true,showInteractiveDevSession:false}});
  let ready=false,stable=0;
- for(let n=0;n<120;n++){if(server.exitCode!==null)throw Error('Server exited: '+output);try{const r=await fetch(base,{signal:AbortSignal.timeout(1000)});const api=await fetch(base+'/api/workspace',{signal:AbortSignal.timeout(1000)});const body=await api.json();if(r.status===200&&api.status===401&&body.error){stable++;if(stable>=6){ready=true;break;}}else stable=0;}catch{stable=0;}await new Promise(r=>setTimeout(r,500));}
+ for(let n=0;n<120;n++){try{const r=await fetch(base,{signal:AbortSignal.timeout(1000)});const api=await fetch(base+'/api/workspace',{signal:AbortSignal.timeout(1000)});const body=await api.json();if(r.status===200&&api.status===401&&body.error){stable++;if(stable>=6){ready=true;break;}}else stable=0;}catch{stable=0;}await new Promise(r=>setTimeout(r,500));}
  if(!ready)throw Error('Server startup timed out: '+output);
  await run(['tests/api.test.mjs'],{...process.env,TEST_BASE:base});
  console.log('Web integration passed against a fresh isolated D1 database.');
 }catch(e){console.error('Worker diagnostic output:\n'+output);throw e;}finally{
- if(server&&server.exitCode===null){server.kill('SIGTERM');await new Promise(resolve=>{server.once('exit',resolve);setTimeout(()=>{if(server.exitCode===null)server.kill('SIGKILL');resolve();},4000).unref();});}
+ if(server)await server.stop();
  rmSync(state,{recursive:true,force:true});
 }

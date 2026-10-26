@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createInquiry,transition,tutorContext,learningOverview} from '../lib/learning.mjs';
+import {createInquiry,transition,tutorContext,learningOverview,serializeInquiry} from '../lib/learning.mjs';
 import {validateText,pageRange,pageText} from '../lib/document-text.mjs';
 const now='2026-10-26T09:00:00.000Z';
 export const problem={title:'区间收缩',subject:'算法',concept:'循环终止',problem:'为什么二分查找卡住？',attempt:'[1,3] 上 left 没有移动',stuck:'取整还是更新问题？'};
@@ -17,3 +17,5 @@ test('review intervals depend on explicit evidence and assistance, never a model
 test('delayed retrieval uses a fresh context, grows interval and preserves first transfer',()=>{let s=transition(answered(),verify,now);const due=s.due;assert.throws(()=>transition(s,{action:'review',question:s.checks[0].question,context:'other'},due));s=transition(s,{action:'review',question:'空数组与单元素数组怎么终止？',context:'边界情形'},due);s=transition(s,{action:'answer',answer:'分别检查初始化和停止条件'},due);s=transition(s,verify,due);assert.equal(s.due,'2026-11-16T09:00:00.000Z');assert.equal(s.checks.length,2);const o=learningOverview([{...s,id:'owned'}],s.due);assert.equal(o.due.length,1);assert.equal(o.concepts[0].contexts.length,2);assert.equal(o.concepts[0].independent,2);});
 test('model context excludes material snapshots and unrelated prior answers',()=>{const s=prepared();s.materials=[{body:'private unselected note'}];s.checks=[{answer:'not needed'}];const c=tutorContext(s);assert.equal(c.materials,undefined);assert.equal(c.checks,undefined);assert.equal(c.latest_plan.observation.result,'找到目标');});
 test('text and PDF ranges reject empty, oversized, non-text or unbounded input',()=>{assert.equal(validateText('hello'),'hello');for(const s of ['', 'x'.repeat(20001),'bad\u0000text','\ufffd'])assert.throws(()=>validateText(s));assert.deepEqual(pageRange(2,3,5),[2,3]);for(const a of [[0,1,5],[2,1,5],[1,21,30],[1,8,5]])assert.throws(()=>pageRange(...a));assert.equal(pageText([{str:'a',hasEOL:true},{str:'b'},{}]),'a\nb');});
+
+test('inquiry storage is bounded in UTF-8 bytes, not characters',()=>{const s=createInquiry(problem,[],now);assert.equal(JSON.parse(serializeInquiry(s).json).title,problem.title);assert.throws(()=>serializeInquiry({body:'字'.repeat(50000)}),/128KB/);});

@@ -67,3 +67,9 @@ export function learningOverview(inquiries,now=new Date().toISOString()) {
  return {concepts:[...groups.values()],due:inquiries.filter(s=>s.stage==='review'&&s.due<=now).sort((a,b)=>a.due.localeCompare(b.due)),
   scheduled:inquiries.filter(s=>s.stage==='review'&&s.due>now).sort((a,b)=>a.due.localeCompare(b.due))};
 }
+
+export function serializeInquiry(state) {
+ const json=JSON.stringify(state),bytes=new TextEncoder().encode(json).byteLength;
+ if(bytes>128*1024)throw Error('这道题的证据超过 128KB，请导出后新建题目继续');
+ return {json,bytes};
+}
