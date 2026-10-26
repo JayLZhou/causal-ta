@@ -14,8 +14,12 @@ export const profiles = sqliteTable("profiles", {
 export const conversations = sqliteTable("conversations", {
  id: text("id").primaryKey(), owner: text("owner").notNull(),
  message: text("message").notNull(), reply: text("reply").notNull(),
- references: text("references").notNull(), created: text("created").notNull(),
+ references: text("references").notNull(), created: text("created").notNull(), inquiryId: text("inquiry_id"),
 }, t => [index("conversations_owner").on(t.owner)]);
 export const usage = sqliteTable("usage", {
  key: text("key").primaryKey(), count: integer("count").notNull(),
 });
+export const inquiries = sqliteTable('inquiries', {
+ id: text('id').primaryKey(), owner: text('owner').notNull(), state: text('state').notNull(),
+ revision: integer('revision').notNull().default(0), created: text('created').notNull(), updated: text('updated').notNull(),
+}, t=>[index('inquiries_owner').on(t.owner)]);

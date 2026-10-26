@@ -1,10 +1,13 @@
 // Run against the built local Worker only, where headers emulate the trusted Sites gateway.
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 const base=process.env.TEST_BASE||'http://127.0.0.1:5174';
 if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base)) throw Error('Integration tests are local-only');
 const a='test-a-'+crypto.randomUUID(),b='test-b-'+crypto.randomUUID();
 const request=async(user,body,origin=base)=>{const headers={'Content-Type':'application/json',Origin:origin};if(user){headers['oai-authenticated-user-id']=user;headers['oai-authenticated-user-email']=user+'@example.test';}const r=await fetch(base+'/api/workspace',{method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined});const raw=await r.text();let value;try{value=JSON.parse(raw);}catch{throw Error(`Expected API JSON; status=${r.status}; body=${raw.slice(0,300)}`);}return {status:r.status,body:value};};
 try {
+ const pdfVersion=JSON.parse(readFileSync('node_modules/pdfjs-dist/package.json','utf8')).version;
+ const workerAsset=await fetch(base+'/generated/pdfjs-'+pdfVersion+'/pdf.worker.min.mjs');assert.equal(workerAsset.status,200);assert.match(await workerAsset.text(),/WorkerMessageHandler/);
  assert.equal((await request(null)).status,401);
  const anonymousChat=await fetch(base+'/api/tutor');assert.equal(anonymousChat.status,401);
  const unavailable=await fetch(base+'/api/tutor',{method:'POST',headers:{Origin:base,'Content-Type':'application/json','oai-authenticated-user-id':a,'oai-authenticated-user-email':a+'@example.test'},body:JSON.stringify({message:'Test',notes:[],consent:true})});assert.equal(unavailable.status,503);
@@ -24,5 +27,32 @@ try {
  assert.equal((await request(b)).body.profile.goal,'');
  assert.equal((await request(a,{op:'erase',confirm:'no'})).status,400);
  await request(a,{op:'delete-session',id:s.id});assert.equal((await request(a)).body.sessions.length,0);
+ const q=async(user,body)=>{const r=await fetch(base+'/api/inquiries',{method:'POST',headers:{'Content-Type':'application/json',Origin:base,...(user?{'oai-authenticated-user-id':user,'oai-authenticated-user-email':user+'@example.test'}:{})},body:JSON.stringify(body)});return {status:r.status,body:await r.json()};};
+ const input={op:'create',title:'Generic problem',subject:'Math',concept:'Derivative',problem:'Differentiate x squared',attempt:'I tried limits',stuck:'What happens to h?',notes:[note.id]};
+ assert.equal((await q(null,input)).status,401);
+ assert.equal((await q(b,input)).status,404);
+ let created=await q(a,input);assert.equal(created.status,200);let task=created.body.inquiries[0];
+ assert.equal(task.materials[0].body,'Test evidence');
+ assert.equal((await request(b)).body.inquiries.length,0);
+ assert.equal((await q(b,{op:'delete',id:task.id,revision:0})).status,404);
+ const act=async(fields)=>{const r=await q(a,{op:'act',id:task.id,revision:task.revision,...fields});if(r.status===200)task=r.body.inquiries.find(t=>t.id===task.id);return r;};
+ const p={action:'plan',a:'h never cancels',b:'h cancels before the limit',kind:'counterexample',change:'Expand the numerator',control:'x stays fixed',predictionA:'Division by zero',predictionB:'2x+h remains',reason:'Distinguish substitution from a limit'};
+ const race=await Promise.all([q(a,{op:'act',id:task.id,revision:0,...p}),q(a,{op:'act',id:task.id,revision:0,...p})]);assert.deepEqual(race.map(r=>r.status).sort(),[200,409]);task=race.find(r=>r.status===200).body.inquiries[0];
+ assert.equal((await act({action:'verify'})).status,400);
+ assert.equal((await act({action:'observe',result:'2x+h',source:'Algebraic expansion',comparison:'b',explanation:'For nonzero h the factor cancels'})).status,200);
+ assert.equal((await act({action:'transfer',reflection:'Limits need not substitute the original quotient',question:'Differentiate 3x squared using limits',context:'Changed coefficient'})).status,200);
+ const tutorHeaders={Origin:base,'Content-Type':'application/json','oai-authenticated-user-id':a,'oai-authenticated-user-email':a+'@example.test'};
+ const blocked=await fetch(base+'/api/tutor',{method:'POST',headers:tutorHeaders,body:JSON.stringify({message:'Give the answer',consent:true,notes:[],inquiry:task.id})});assert.equal(blocked.status,400);assert.match((await blocked.json()).error,/独立作答/);
+ const isolated=await fetch(base+'/api/tutor?inquiry='+task.id,{headers:{...tutorHeaders,'oai-authenticated-user-id':b}});assert.equal(isolated.status,400);
+ assert.equal((await act({action:'answer',answer:'6x'})).status,200);
+ assert.equal((await act({action:'answer',answer:'overwrite'})).status,400);
+ assert.equal((await act({action:'verify',rating:'independent',usedHelp:false,basis:'Limit of 6x+3h is 6x'})).status,200);
+ assert.ok(task.due);assert.equal(task.checks[0].answer,'6x');
+ const stored=(await request(a)).body.inquiries[0];assert.equal(stored.stage,'review');
+ assert.equal((await act({action:'review',question:'Something else',context:'Early'})).status,400);
+ assert.equal((await q(a,{op:'delete',id:task.id,revision:task.revision})).status,200);
+ assert.equal((await request(a)).body.inquiries.length,0);
+ await q(a,{...input,notes:[]});await request(a,{op:'erase',confirm:'DELETE'});assert.equal((await request(a)).body.inquiries.length,0);
+ console.log('PASS: inquiry intake, material ownership, snapshots, concurrency, phase gates, immutable first answer, tutor isolation, review schedule, delete/export boundaries');
  console.log('PASS: anonymous rejection, origin check, hidden-answer boundary, owner isolation, atomic concurrent updates, notes CRUD, profile isolation, deletion');
 } finally {await request(a,{op:'erase',confirm:'DELETE'});await request(b,{op:'erase',confirm:'DELETE'});}

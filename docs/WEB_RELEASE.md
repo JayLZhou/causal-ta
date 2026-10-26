@@ -1,5 +1,7 @@
 # Web 个人学习空间
 
+最新迭代见 [Web 0.8](WEB_08.md)。以下为 2026-10-24 的 0.7 历史验收记录。
+
 2026-10-24：从本机单会话界面扩展为可部署的云端个人空间。Web 版本 `0.7.0-alpha.1`；Python 内核仍为 `0.6.0a1`。
 
 公开站点：[CausalTA](https://causal-ta-jaylzhou.berry-elm-9957.chatgpt.site)。Sites 生产部署状态已确认成功。

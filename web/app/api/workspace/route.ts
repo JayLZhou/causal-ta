@@ -1,3 +1,4 @@
+import {listInquiries} from '@/lib/inquiries-store';
 import {boundedText} from '@/lib/body.mjs';
 import { env } from 'cloudflare:workers';
 import { getChatGPTUser } from '../../chatgpt-auth';
@@ -15,9 +16,9 @@ async function workspace(owner: string) {
     db.prepare('SELECT id, course, state, revision, created, updated FROM sessions WHERE owner=? ORDER BY updated DESC LIMIT 100').bind(owner).all(),
     db.prepare('SELECT id,title,subject,body,updated FROM notes WHERE owner=? ORDER BY updated DESC LIMIT 100').bind(owner).all(),
     db.prepare('SELECT name,goal FROM profiles WHERE owner=?').bind(owner).first(),
-    db.prepare('SELECT id,message,reply,"references",created FROM conversations WHERE owner=? ORDER BY created DESC LIMIT 100').bind(owner).all(),
+    db.prepare('SELECT id,message,reply,"references",created,inquiry_id FROM conversations WHERE owner=? ORDER BY created DESC LIMIT 100').bind(owner).all(),
   ]);
-  return {conversations:cs.results.map((r:any)=>({...r,reply:JSON.parse(r.reply),references:JSON.parse(r.references)})),sessions:ss.results.map((r:any)=>({id:r.id,revision:r.revision,created:r.created,updated:r.updated,...view(JSON.parse(r.state))})),notes:ns.results,profile:p||{name:'',goal:''}};
+  return {inquiries:await listInquiries(owner),conversations:cs.results.map((r:any)=>({...r,reply:JSON.parse(r.reply),references:JSON.parse(r.references)})),sessions:ss.results.map((r:any)=>({id:r.id,revision:r.revision,created:r.created,updated:r.updated,...view(JSON.parse(r.state))})),notes:ns.results,profile:p||{name:'',goal:''}};
 }
 export async function GET() {
   const user=await getChatGPTUser();if(!user) return json({error:'请先登录，保存你的个人学习记录。'},401);
@@ -67,7 +68,7 @@ export async function POST(req: Request) {
         .bind(owner,text(b.name,60,true),text(b.goal,500,true)).run();feedback='学习目标已更新。';
     } else if(b.op==='erase') {
       if(b.confirm!=='DELETE') throw Error('请输入 DELETE 确认删除');
-      await db.batch(['sessions','notes','profiles','conversations'].map(t=>db.prepare(`DELETE FROM ${t} WHERE owner=?`).bind(owner)));feedback='你的学习数据已删除。';
+      await db.batch(['sessions','notes','profiles','conversations','inquiries'].map(t=>db.prepare(`DELETE FROM ${t} WHERE owner=?`).bind(owner)));feedback='你的学习数据已删除。';
     } else throw Error('未知操作');
     return json({...await workspace(owner),feedback,sessionId});
   } catch(e) {
