@@ -7,7 +7,7 @@ import MaterialImport from './material-import';
 import {useEffect,useState,type FormEvent} from 'react';
 import {MessageSquare,ArrowUpRight,ArrowRight,BookOpen,FlaskConical,LayoutDashboard,NotebookPen,ChartNoAxesCombined,Settings,GitBranch,Plus,Search,Check,ChevronRight,Download,Trash2,FileText,Lightbulb,RotateCcw,Menu,X,GraduationCap,Code2,Network,Target,Cloud,LogOut} from 'lucide-react';
 type Item=Record<string,any>;
-const names:Record<string,string>={inquiries:'我的题目',reviews:'复习计划',chat:'和 TA 对话',home:'我的课程',demo:'一分钟体验',courses:'示例练习',lab:'当前练习',notes:'我的笔记',progress:'学习记录',settings:'个人设置'};
+const names:Record<string,string>={inquiries:'我的题目',reviews:'复习计划',chat:'和 TA 对话',home:'学习空间',demo:'一分钟体验',courses:'示例练习',lab:'当前练习',notes:'我的笔记',progress:'学习记录',settings:'个人设置'};
 const stageName:Record<string,string>={investigate:'探索中',transfer:'迁移检验',complete:'已完成'};
 const emptyNote={id:'',title:'',subject:'',body:''};
 const date=(s:string)=>new Date(s).toLocaleDateString('zh-CN',{month:'short',day:'numeric'});
@@ -46,18 +46,18 @@ export default function Workspace({user,courses,modelEnabled}:{user:{name:string
  return <div className="app-shell">
   <a href="#main" className="skip">跳到主要内容</a>
   <aside className={'sidebar '+(mobile?'open':'')}>
-   <a className="brand" href="#home" onClick={e=>{e.preventDefault();go('home');}}><span className="brand-symbol"><GitBranch size={22}/></span>Causal<span>TA</span><small>β</small></a>
-   <div className="space-label">个人学习空间</div>
-   <nav aria-label="主导航">{([[ 'home',LayoutDashboard],['courses',BookOpen],['inquiries',FileText],['reviews',RotateCcw],['notes',NotebookPen]] as const).map(([id,Icon])=><button key={id} className={tab===id?'nav-item selected':'nav-item'} aria-current={tab===id?'page':undefined} onClick={()=>go(id)}><Icon size={19}/>{names[id]}</button>)}<details className="more-tools" open={['chat','lab','progress'].includes(tab)||undefined}><summary>更多工具</summary>{([['chat',MessageSquare],['lab',FlaskConical],['progress',ChartNoAxesCombined]] as const).map(([id,Icon])=><button key={id} className={'nav-item '+(tab===id?'selected':'')} onClick={()=>go(id)}><Icon size={18}/>{names[id]}</button>)}</details></nav>
+   <a className="brand" href="#home" onClick={e=>{e.preventDefault();go('home');}}><span className="brand-symbol"><span className="brand-mark">∴</span></span>Causal<span>TA</span><small>β</small></a>
+   <div className="space-label">LEARN WITH CURIOSITY</div>
+   <nav aria-label="主导航">{([[ 'home',LayoutDashboard],['inquiries',FileText],['reviews',RotateCcw],['notes',NotebookPen]] as const).map(([id,Icon])=><button key={id} className={tab===id?'nav-item selected':'nav-item'} aria-current={tab===id?'page':undefined} onClick={()=>go(id)}><Icon size={19}/>{names[id]}</button>)}<details className="more-tools" open={['demo','courses','chat','lab','progress'].includes(tab)||undefined}><summary>练习与工具</summary>{([['demo',Lightbulb],['courses',BookOpen],['chat',MessageSquare],['lab',FlaskConical],['progress',ChartNoAxesCombined]] as const).map(([id,Icon])=><button key={id} className={'nav-item '+(tab===id?'selected':'')} onClick={()=>go(id)}><Icon size={18}/>{names[id]}</button>)}</details></nav>
    <div className="sidebar-bottom"><a className="source-link" href="https://github.com/JayLZhou/causal-ta" target="_blank" rel="noreferrer">开源项目 <ArrowUpRight size={16}/></a><button className={'nav-item '+(tab==='settings'?'selected':'')} onClick={()=>go('settings')}><Settings size={18}/>个人设置</button><div className="user"><span className="avatar">{(data.profile.name||user?.name||'访')[0]}</span><div><b>{data.profile.name||user?.name||'访客'}</b><small>{user?'个人云端学习空间':'登录后保存学习进度'}</small></div><span className="online-dot"/></div></div>
   </aside>
   {mobile&&<button className="overlay" aria-label="关闭导航" onClick={()=>setMobile(false)}/>}
-  <div className="main-shell"><header className="topbar"><button className="mobile-toggle icon-btn" aria-label="打开导航" onClick={()=>setMobile(true)}><Menu/></button><span className="breadcrumb">我的空间 <ChevronRight size={14}/> <b>{names[tab]}</b></span><div className="top-actions"><span className="engine-status"><span/>{modelEnabled?'AI 对话已启用':'课程知识库 · 可连接模型'}</span>{user?<button className="subtle" onClick={startNote}><Plus size={16}/> 新建笔记</button>:<a className="button small" href="/signin-with-chatgpt?return_to=%2F" target="_top">登录学习</a>}</div></header>
+  <div className="main-shell"><header className="topbar"><button className="mobile-toggle icon-btn" aria-label="打开导航" onClick={()=>setMobile(true)}><Menu/></button><span className="breadcrumb">我的空间 <ChevronRight size={14}/> <b>{names[tab]}</b></span><div className="top-actions"><span className="engine-status"><span/>{modelEnabled?'AI 对话已启用':'知识库已就绪 · AI 待连接'}</span>{user?<button className="subtle" onClick={startNote}><Plus size={16}/> 新建笔记</button>:<a className="button small" href="/signin-with-chatgpt?return_to=%2F" target="_top">登录学习</a>}</div></header>
   <main id="main" tabIndex={-1}>
    {error&&<div className="alert error" role="alert">{error}<button onClick={()=>void refresh()}>刷新数据</button></div>}
    {message&&<div className="alert success" role="status"><Check size={18}/>{message}<button aria-label="关闭通知" onClick={()=>setMessage('')}><X size={16}/></button></div>}
    {loading?<div className="loading"><div className="spinner"/>正在打开你的学习空间…</div>:<>
-   {tab==='home'&&<Study user={user} modelEnabled={modelEnabled} examples={()=>go('demo')} onDirty={setStudyDirty}/>}
+   {tab==='home'&&<Study user={user} modelEnabled={modelEnabled} onDirty={setStudyDirty}/>}
    {tab==='demo'&&<Start go={go} latest={latest} resume={resume} modelEnabled={modelEnabled}/>}
    {tab==='inquiries'&&<Inquiries modelEnabled={modelEnabled} user={user} items={inquiries} notes={notes} active={inquiryId} setActive={setInquiryId} onDirty={setInquiryDirty} suggestion={suggestion} onConsumeSuggestion={()=>setSuggestion(null)} onSaved={items=>setData(d=>({...d,inquiries:items}))} ask={id=>{setChatInquiry(id);setTab('chat');history.replaceState(null,'','#chat');}}/>}
    {tab==='reviews'&&<ReviewPlan items={inquiries} sessions={sessions} open={id=>{setInquiryId(id);go('inquiries');}} startCourse={begin}/>}
