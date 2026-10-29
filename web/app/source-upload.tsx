@@ -1,0 +1,24 @@
+'use client';
+import {useState} from 'react';
+import {Upload,FileText} from 'lucide-react';
+import {pageText} from '@/lib/document-text.mjs';
+export default function SourceUpload({save,busy,connection}:{connection:{key:string;model:string};save:(title:string,body:string)=>Promise<boolean>;busy:boolean}){
+ const [image,setImage]=useState<File|null>(null),[consent,setConsent]=useState(false);
+ const [title,setTitle]=useState(''),[body,setBody]=useState(''),[reading,setReading]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ async function read(file:File){if(body&&!confirm('用新文件替换当前未保存的正文？'))return;setReading(true);setError('');setNotice('');try{
+  if(file.size>10*1024*1024)throw Error('单个文件最多 10MB。');let text='';
+  if(/\.(png|jpe?g|webp)$/i.test(file.name)){if(file.size>2*1024*1024)throw Error('图片最多 2MB，请裁剪后重试。');setImage(file);setConsent(false);setNotice('图片需通过视觉模型提取文字，请在下方确认后识别。');return;}
+  setImage(null);
+  if(/\.pdf$/i.test(file.name)){
+   const pdfjs=await import('pdfjs-dist'),base='/generated/pdfjs-'+pdfjs.version+'/';pdfjs.GlobalWorkerOptions.workerSrc=base+'pdf.worker.min.mjs';
+   const task=pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer()),disableFontFace:true,useSystemFonts:false,standardFontDataUrl:base+'standard_fonts/',cMapUrl:base+'cmaps/',cMapPacked:true,wasmUrl:base+'wasm/'});
+   const timer=setTimeout(()=>{void task.destroy();},30000);
+   try{const pdf=await task.promise;if(pdf.numPages>100)throw Error('每份最多 100 页，请先拆分教材。');const pages=[];let size=0;for(let n=1;n<=pdf.numPages;n++){const page=await pdf.getPage(n),raw=pageText((await page.getTextContent()).items);if(!raw)throw Error(`第 ${n} 页没有可提取文字。请先 OCR，或粘贴这页内容；不会静默跳过。`);size+=raw.length;if(size>100000)throw Error('每份最多 10 万字，请拆分后上传。');pages.push(`[第 ${n} 页]\n${raw}`);page.cleanup();setNotice(`正在读取 ${n} / ${pdf.numPages} 页…`);}text=pages.join('\n\n');}finally{clearTimeout(timer);await task.destroy();}
+  }else if(/\.docx$/i.test(file.name)){const mammoth=await import('mammoth/mammoth.browser');text=(await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()})).value;}
+  else if(/\.(md|txt|csv)$/i.test(file.name)){if(file.size>400000)throw Error('文本文件过大，请拆分后上传。');text=await file.text();}
+  else throw Error('支持 PDF、DOCX、TXT、Markdown、CSV、PNG、JPEG、WebP。');
+  if(!text.trim()||text.includes('\u0000')||text.includes('\ufffd'))throw Error('没有有效文本，请检查文件编码或先做 OCR。');if(text.length>100000)throw Error('每份资料最多 10 万字。');
+  setTitle(file.name);setBody(text);setNotice('已提取，请核对下面的正文。保存后建立检索索引；原文件不上传。');
+ }catch(e){setError(e instanceof Error?e.message:'读取失败');setNotice('');}finally{setReading(false);}}
+ return <form className="upload-form" onSubmit={async e=>{e.preventDefault();if(await save(title,body)){setTitle('');setBody('');setNotice('资料已保存并建立检索索引。');}}}><label className="upload-drop"><Upload size={27}/><b>{reading?'正在读取资料…':'选择教材、讲义或作业'}</b><span>PDF · Word · 文本 · 图片</span><input aria-label="上传课程资料" type="file" accept=".pdf,.docx,.md,.txt,.csv,.png,.jpg,.jpeg,.webp" disabled={busy||reading} onChange={e=>{const f=e.target.files?.[0];if(f)void read(f);e.target.value='';}}/></label><p className="muted">也可以直接粘贴内容。最多 10MB / 100 页 / 10 万字；图片支持模型识别；扫描 PDF 请先转图片或 OCR。公式和表格请核对提取结果。</p>{image&&<div className="card"><b>{image.name}</b><label className="consent"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/>同意将这张图片发送给 OpenAI 识别。识别可能有误，请核对后保存。</label><button type="button" className="button secondary" disabled={!consent||reading||busy} onClick={async()=>{setReading(true);setError('');try{const f=image;const encoded=await new Promise<string>((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(Error('图片读取失败'));r.readAsDataURL(f);});const r=await fetch('/api/study/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:encoded,consent,...(connection.key?connection:{})})}),d=await r.json() as {text:string;error:string};if(!r.ok)throw Error(d.error);setTitle(f.name);setBody(d.text);setImage(null);setNotice('图片识别完成，请核对公式、符号和正文后保存。');}catch(e){setError(e instanceof Error?e.message:'识别失败');}finally{setReading(false);}}}>识别图片文字</button></div>}{error&&<p className="alert error" role="alert">{error}</p>}{notice&&<p role="status" className="muted">{notice}</p>}<label>资料名称<input required maxLength={160} value={title} onChange={e=>setTitle(e.target.value)} placeholder="例如：世界史 · 第一周讲义"/></label><label>正文预览 / 粘贴文本<textarea required rows={7} maxLength={100000} value={body} onChange={e=>setBody(e.target.value)} placeholder="把课程材料粘贴到这里，或选择上方文件提取文字。"/></label><div className="button-row"><button type="submit" className="button" disabled={busy||reading||!body.trim()||!title.trim()}><FileText size={16}/>保存并建立知识库</button><small>{body.length.toLocaleString()} 字</small></div></form>;
+}
